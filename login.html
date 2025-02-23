@@ -13,15 +13,30 @@
         }
 
         .login-section {
-            background: linear-gradient(135deg, var(--um-red), var(--um-yellow));
+            background-image: url('images/login.png');
+            background-size: cover;
+            background-position: center;
             min-height: 100vh;
-            padding: 100px 0;
+            padding: 60px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .login-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            margin: 0 auto;
         }
 
         .btn-um {
@@ -45,13 +60,8 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--um-red);">
-        <div class="container">
-            <a class="navbar-brand" href="#">UM Collaboration Room Reservation</a>
-        </div>
-    </nav>
-
     <section class="login-section">
+        <div class="login-overlay"></div>
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-6 col-lg-4">
