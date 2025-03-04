@@ -1,21 +1,15 @@
 <?php
 session_start();
 
-// Temporary bypass - remove these lines later
-$_SESSION['user_id'] = 1;          // Remove after implementing auth
-$_SESSION['user_name'] = "Test User"; // Remove after implementing auth
+// Temporary session bypass - remove these lines after implementing authentication
+$_SESSION['user_id'] = 1;
+$_SESSION['user_name'] = "John Doe";
 
 // Redirect to login if not authenticated
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
-
-// Database connection placeholder
-// $db = new mysqli('localhost', 'username', 'password', 'database_name');
-
-// Fetch user data placeholder
-// $user = $db->query("SELECT * FROM users WHERE id = {$_SESSION['user_id']}")->fetch_assoc();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,7 +19,6 @@ if (!isset($_SESSION['user_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - UM Library</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <style>
         :root {
             --um-red: #CC0000;
@@ -59,8 +52,10 @@ if (!isset($_SESSION['user_id'])) {
             transform: translateY(-10px);
         }
 
-        .booking-section {
-            padding: 60px 0;
+        .booking-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -68,7 +63,7 @@ if (!isset($_SESSION['user_id'])) {
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="student_home.php">UM Collaboration Rooms</a>
+            <a class="navbar-brand" href="student_home.php">UM Collaboration Room Reservation</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -93,42 +88,62 @@ if (!isset($_SESSION['user_id'])) {
 
     <section class="hero-section">
         <div class="container text-center">
-            <h1 class="display-4 mb-4">Welcome back, <?= htmlspecialchars($_SESSION['user_name'] ?? 'Student') ?>!</h1>
-            <p class="lead mb-4">Reserve your study space in few clicks</p>
+            <h1 class="display-4 mb-4">Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>!</h1>
+            <p class="lead mb-4">University of Mindanao Library Collaboration Rooms Booking System</p>
             <a href="booking.php" class="btn btn-um btn-lg">New Reservation</a>
         </div>
     </section>
 
-    <section class="booking-section">
+    <section class="py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2 class="mb-4">Study Room Features</h2>
+                    <p class="lead">Our collaboration rooms are equipped with:</p>
+                    <ul class="lead">
+                        <li>High-speed WiFi</li>
+                        <li>LCD monitors</li>
+                        <li>Whiteboards</li>
+                        <li>Comfortable seating</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <img src="images/library.jpg" alt="Library Room" class="img-fluid rounded-3">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-light">
         <div class="container">
             <h2 class="text-center mb-5">Upcoming Reservations</h2>
             <div class="row g-4">
-                <!-- Placeholder for dynamic content -->
                 <?php if(isset($reservations) && count($reservations) > 0): ?>
                     <?php foreach($reservations as $booking): ?>
                         <div class="col-md-4">
-                            <div class="card feature-card h-100">
+                            <div class="card booking-card h-100">
                                 <div class="card-body">
-                                    <h5 class="card-title"><?= htmlspecialchars($booking['room_name']) ?></h5>
+                                    <h5 class="card-title">Room <?= htmlspecialchars($booking['room_number']) ?></h5>
                                     <p class="card-text">
-                                        <?= date('M d, Y', strtotime($booking['booking_date'])) ?><br>
-                                        <?= $booking['time_slot'] ?>
+                                        <strong>Date:</strong> <?= date('M d, Y', strtotime($booking['booking_date'])) ?><br>
+                                        <strong>Time:</strong> <?= htmlspecialchars($booking['time_slot']) ?>
                                     </p>
+                                    <div class="d-grid">
+                                        <button class="btn btn-um btn-sm">Manage Booking</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <div class="col-12 text-center">
-                        <p class="text-muted">No upcoming reservations found</p>
-                        <a href="booking.php" class="btn btn-um">Make a Reservation</a>
+                        <p class="text-muted lead">No upcoming reservations found</p>
+                        <a href="booking.php" class="btn btn-um">Book a Room Now</a>
                     </div>
                 <?php endif; ?>
             </div>
         </div>
     </section>
-
-    <!-- Additional sections can be added here -->
 
     <footer class="bg-dark text-white py-4">
         <div class="container text-center">
