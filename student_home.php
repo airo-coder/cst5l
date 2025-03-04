@@ -1,4 +1,4 @@
-<?php
+<<?php
 session_start();
 
 // Temporary session bypass - remove these lines after implementing authentication
@@ -51,12 +51,6 @@ if (!isset($_SESSION['user_id'])) {
         .feature-card:hover {
             transform: translateY(-10px);
         }
-
-        .booking-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
     </style>
 </head>
 
@@ -90,7 +84,7 @@ if (!isset($_SESSION['user_id'])) {
         <div class="container text-center">
             <h1 class="display-4 mb-4">Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>!</h1>
             <p class="lead mb-4">University of Mindanao Library Collaboration Rooms Booking System</p>
-            <a href="booking.php" class="btn btn-um btn-lg">New Reservation</a>
+            <a href="booking.php" class="btn btn-um btn-lg">Book a Room Now</a>
         </div>
     </section>
 
@@ -98,14 +92,10 @@ if (!isset($_SESSION['user_id'])) {
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h2 class="mb-4">Study Room Features</h2>
-                    <p class="lead">Our collaboration rooms are equipped with:</p>
-                    <ul class="lead">
-                        <li>High-speed WiFi</li>
-                        <li>LCD monitors</li>
-                        <li>Whiteboards</li>
-                        <li>Comfortable seating</li>
-                    </ul>
+                    <h2 class="mb-4">About Our Facility</h2>
+                    <p class="lead">Collaboration rooms designed for group studies, equipped with 
+                        all the tech you need for productive discussions. 
+                        Open to all UM students during library hours.</p>
                 </div>
                 <div class="col-md-6">
                     <img src="images/library.jpg" alt="Library Room" class="img-fluid rounded-3">
@@ -114,33 +104,35 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </section>
 
+    <!-- Features Section -->
     <section class="py-5 bg-light">
         <div class="container">
-            <h2 class="text-center mb-5">Upcoming Reservations</h2>
+            <h2 class="text-center mb-5">Features</h2>
             <div class="row g-4">
-                <?php if(isset($reservations) && count($reservations) > 0): ?>
-                    <?php foreach($reservations as $booking): ?>
-                        <div class="col-md-4">
-                            <div class="card booking-card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">Room <?= htmlspecialchars($booking['room_number']) ?></h5>
-                                    <p class="card-text">
-                                        <strong>Date:</strong> <?= date('M d, Y', strtotime($booking['booking_date'])) ?><br>
-                                        <strong>Time:</strong> <?= htmlspecialchars($booking['time_slot']) ?>
-                                    </p>
-                                    <div class="d-grid">
-                                        <button class="btn btn-um btn-sm">Manage Booking</button>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Easy Booking</h5>
+                            <p class="card-text">Reserve rooms in 3 simple steps</p>
                         </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <div class="col-12 text-center">
-                        <p class="text-muted lead">No upcoming reservations found</p>
-                        <a href="booking.php" class="btn btn-um">Book a Room Now</a>
                     </div>
-                <?php endif; ?>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Real-Time Availability</h5>
+                            <p class="card-text">Live updates on room schedules</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">24/7 Access</h5>
+                            <p class="card-text">Manage bookings anytime, anywhere</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
