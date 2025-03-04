@@ -1,6 +1,10 @@
 <?php
 session_start();
 
+// Temporary bypass - remove these lines later
+$_SESSION['user_id'] = 1;          // Remove after implementing auth
+$_SESSION['user_name'] = "Test User"; // Remove after implementing auth
+
 // Redirect to login if not authenticated
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
