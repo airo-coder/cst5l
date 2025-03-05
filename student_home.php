@@ -1,4 +1,4 @@
-<<?php
+<?php
 session_start();
 
 // Temporary session bypass - remove these lines after implementing authentication
@@ -57,7 +57,10 @@ if (!isset($_SESSION['user_id'])) {
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="student_home.php">UM Collaboration Room Reservation</a>
+            <a class="navbar-brand" href="student_home.php" style="display: flex; align-items: center;">
+                <img src="images/um-logo.png" alt="UM Logo" height="40" class="d-inline-block align-text-top">
+                <span class="ms-2">Collaboration Room Reservation</span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -65,12 +68,6 @@ if (!isset($_SESSION['user_id'])) {
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link active" href="student_home.php">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="bookings.php">My Bookings</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="profile.php">Profile</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="logout.php">Logout</a>
@@ -84,7 +81,7 @@ if (!isset($_SESSION['user_id'])) {
         <div class="container text-center">
             <h1 class="display-4 mb-4">Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>!</h1>
             <p class="lead mb-4">University of Mindanao Library Collaboration Rooms Booking System</p>
-            <a href="booking.php" class="btn btn-um btn-lg">Book a Room Now</a>
+            <a href="student_booking.php" class="btn btn-um btn-lg">Book a Room Now</a>
         </div>
     </section>
 
@@ -93,8 +90,8 @@ if (!isset($_SESSION['user_id'])) {
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <h2 class="mb-4">About Our Facility</h2>
-                    <p class="lead">Collaboration rooms designed for group studies, equipped with 
-                        all the tech you need for productive discussions. 
+                    <p class="lead">Collaboration rooms designed for group studies, equipped with
+                        all the tech you need for productive discussions.
                         Open to all UM students during library hours.</p>
                 </div>
                 <div class="col-md-6">
@@ -145,4 +142,5 @@ if (!isset($_SESSION['user_id'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
