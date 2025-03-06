@@ -31,6 +31,12 @@ $rooms = [
         'equipment' => 'LCD Screen, Whiteboard', 'floor' => '1st Floor',
         'description' => 'Interactive space for creative collaborations'
     ],
+    [
+        'number' => '106', 'capacity' => '4-6 Persons',
+        'equipment' => 'Projector, Conference Table', 'floor' => '1st Floor',
+        'description' => 'Tech-enabled collaboration space with smart board'
+    ],
+
     // Second Floor (8-10 Persons)
     [
         'number' => '201', 'capacity' => '8-10 Persons',
@@ -56,6 +62,11 @@ $rooms = [
         'number' => '205', 'capacity' => '8-10 Persons',
         'equipment' => 'Projector, Conference Table', 'floor' => '2nd Floor',
         'description' => 'Multi-purpose large group collaboration space'
+    ],
+    [
+        'number' => '206', 'capacity' => '8-10 Persons',
+        'equipment' => 'LCD Screen, Whiteboard', 'floor' => '2nd Floor',
+        'description' => 'Flexible workshop space with movable furniture'
     ]
 ];
 ?>
@@ -65,7 +76,7 @@ $rooms = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Collaboration Rooms - UM Library</title>
+    <title>UM Library - Book Rooms</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -75,10 +86,10 @@ $rooms = [
         }
 
         .room-card {
-            transition: transform 0.3s, box-shadow 0.3s;
             border: 2px solid var(--um-red);
             border-radius: 15px;
             overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
             margin-bottom: 1.5rem;
         }
 
@@ -93,11 +104,22 @@ $rooms = [
             border-bottom: 3px solid var(--um-red);
         }
 
+        .card-title {
+            color: var(--um-red);
+            font-weight: bold;
+        }
+
+        .badge-um {
+            background-color: var(--um-red);
+            color: white;
+            font-size: 0.9em;
+        }
+
         .btn-um {
             background-color: var(--um-yellow);
             color: var(--um-red);
             border: none;
-            padding: 10px 25px;
+            padding: 10px 20px;
             font-weight: bold;
             transition: all 0.3s;
         }
@@ -107,31 +129,25 @@ $rooms = [
             background-color: #ffcc00;
         }
 
-        .badge-um {
-            background-color: var(--um-red);
-            color: white;
-            font-size: 0.9em;
+        .navbar-custom {
+            background-color: var(--um-red) !important;
         }
 
         .equipment-list {
             color: #666;
             font-size: 0.9em;
-            margin-bottom: 1rem;
-        }
-
-        .navbar-custom {
-            background-color: var(--um-red) !important;
         }
     </style>
 </head>
 <body>
+    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="student_home.php" style="display: flex; align-items: center;">
+            <a class="navbar-brand" href="#" style="display: flex; align-items: center;">
                 <img src="images/um-logo.png" alt="UM Logo" height="40">
                 <span class="ms-2">Collaboration Room Reservation</span>
             </a>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link active" href="student_home.php">Home</a>
@@ -144,6 +160,7 @@ $rooms = [
         </div>
     </nav>
 
+    <!-- Main Content -->
     <main class="container mt-5 pt-4">
         <h2 class="text-center mb-4" style="color: var(--um-red);">Available Collaboration Rooms</h2>
         
@@ -156,7 +173,7 @@ $rooms = [
                          alt="Room <?= $room['number'] ?>">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="card-title mb-0" style="color: var(--um-red);">Room <?= $room['number'] ?></h5>
+                            <h5 class="card-title mb-0">Room <?= $room['number'] ?></h5>
                             <span class="badge badge-um rounded-pill"><?= $room['capacity'] ?></span>
                         </div>
                         
@@ -165,13 +182,13 @@ $rooms = [
                                 <i class="fas fa-map-marker-alt me-2"></i>
                                 <?= $room['floor'] ?>
                             </div>
-                            <div class="d-flex align-items-center mb-3">
+                            <div class="d-flex align-items-center">
                                 <i class="fas fa-tools me-2"></i>
                                 <?= $room['equipment'] ?>
                             </div>
                         </div>
                         
-                        <p class="card-text text-muted small">
+                        <p class="card-text text-muted small mb-3">
                             <?= $room['description'] ?>
                         </p>
                         
@@ -212,13 +229,12 @@ $rooms = [
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Filter Fix
         document.addEventListener('DOMContentLoaded', function() {
             const bookingModal = document.getElementById('bookingModal');
             bookingModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
                 const roomNumber = button.getAttribute('data-room');
-                const roomImg = button.closest('.card').querySelector('.room-image').src;
+                const roomImg = button.closest('.room-card').querySelector('.room-image').src;
                 
                 document.getElementById('roomNumber').textContent = roomNumber;
                 document.getElementById('modalRoomImage').src = roomImg;
