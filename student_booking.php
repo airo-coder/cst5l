@@ -7,65 +7,89 @@ $_SESSION['user_name'] = "Test User";
 $rooms = [
     // First Floor (4-6 Persons)
     [
-        'number' => '101', 'capacity' => '4-6 Persons', 
-        'equipment' => 'LCD Screen, Whiteboard', 'floor' => '1st Floor',
+        'number' => '101',
+        'capacity' => '4-6 Persons',
+        'equipment' => 'LCD Screen, Whiteboard',
+        'floor' => '1st Floor',
         'description' => 'Ideal for small group discussions and brainstorming sessions'
     ],
     [
-        'number' => '102', 'capacity' => '4-6 Persons',
-        'equipment' => 'Projector, Conference Table', 'floor' => '1st Floor',
+        'number' => '102',
+        'capacity' => '4-6 Persons',
+        'equipment' => 'Projector, Conference Table',
+        'floor' => '1st Floor',
         'description' => 'Perfect for presentations and team meetings'
     ],
     [
-        'number' => '103', 'capacity' => '4-6 Persons',
-        'equipment' => 'LCD Screen, Whiteboard', 'floor' => '1st Floor',
+        'number' => '103',
+        'capacity' => '4-6 Persons',
+        'equipment' => 'LCD Screen, Whiteboard',
+        'floor' => '1st Floor',
         'description' => 'Compact space with collaborative technology'
     ],
     [
-        'number' => '104', 'capacity' => '4-6 Persons',
-        'equipment' => 'Projector, Conference Table', 'floor' => '1st Floor',
+        'number' => '104',
+        'capacity' => '4-6 Persons',
+        'equipment' => 'Projector, Conference Table',
+        'floor' => '1st Floor',
         'description' => 'Meeting room with professional presentation setup'
     ],
     [
-        'number' => '105', 'capacity' => '4-6 Persons',
-        'equipment' => 'LCD Screen, Whiteboard', 'floor' => '1st Floor',
+        'number' => '105',
+        'capacity' => '4-6 Persons',
+        'equipment' => 'LCD Screen, Whiteboard',
+        'floor' => '1st Floor',
         'description' => 'Interactive space for creative collaborations'
     ],
     [
-        'number' => '106', 'capacity' => '4-6 Persons',
-        'equipment' => 'Projector, Conference Table', 'floor' => '1st Floor',
+        'number' => '106',
+        'capacity' => '4-6 Persons',
+        'equipment' => 'Projector, Conference Table',
+        'floor' => '1st Floor',
         'description' => 'Tech-enabled collaboration space with smart board'
     ],
 
     // Second Floor (8-10 Persons)
     [
-        'number' => '201', 'capacity' => '8-10 Persons',
-        'equipment' => 'Projector, Conference Table', 'floor' => '2nd Floor',
+        'number' => '201',
+        'capacity' => '8-10 Persons',
+        'equipment' => 'Projector, Conference Table',
+        'floor' => '2nd Floor',
         'description' => 'Large conference-style meeting room'
     ],
     [
-        'number' => '202', 'capacity' => '8-10 Persons',
-        'equipment' => 'LCD Screen, Whiteboard', 'floor' => '2nd Floor',
+        'number' => '202',
+        'capacity' => '8-10 Persons',
+        'equipment' => 'LCD Screen, Whiteboard',
+        'floor' => '2nd Floor',
         'description' => 'Spacious collaborative environment with dual displays'
     ],
     [
-        'number' => '203', 'capacity' => '8-10 Persons',
-        'equipment' => 'Projector, Conference Table', 'floor' => '2nd Floor',
+        'number' => '203',
+        'capacity' => '8-10 Persons',
+        'equipment' => 'Projector, Conference Table',
+        'floor' => '2nd Floor',
         'description' => 'Executive meeting room with video conferencing'
     ],
     [
-        'number' => '204', 'capacity' => '8-10 Persons',
-        'equipment' => 'LCD Screen, Whiteboard', 'floor' => '2nd Floor',
+        'number' => '204',
+        'capacity' => '8-10 Persons',
+        'equipment' => 'LCD Screen, Whiteboard',
+        'floor' => '2nd Floor',
         'description' => 'Innovation lab with writable walls'
     ],
     [
-        'number' => '205', 'capacity' => '8-10 Persons',
-        'equipment' => 'Projector, Conference Table', 'floor' => '2nd Floor',
+        'number' => '205',
+        'capacity' => '8-10 Persons',
+        'equipment' => 'Projector, Conference Table',
+        'floor' => '2nd Floor',
         'description' => 'Multi-purpose large group collaboration space'
     ],
     [
-        'number' => '206', 'capacity' => '8-10 Persons',
-        'equipment' => 'LCD Screen, Whiteboard', 'floor' => '2nd Floor',
+        'number' => '206',
+        'capacity' => '8-10 Persons',
+        'equipment' => 'LCD Screen, Whiteboard',
+        'floor' => '2nd Floor',
         'description' => 'Flexible workshop space with movable furniture'
     ]
 ];
@@ -73,6 +97,7 @@ $rooms = [
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -95,7 +120,7 @@ $rooms = [
 
         .room-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
         }
 
         .room-image {
@@ -139,6 +164,7 @@ $rooms = [
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
@@ -163,44 +189,40 @@ $rooms = [
     <!-- Main Content -->
     <main class="container mt-5 pt-4">
         <h2 class="text-center mb-4" style="color: var(--um-red);">Available Collaboration Rooms</h2>
-        
+
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <?php foreach ($rooms as $room): ?>
-            <div class="col">
-                <div class="card h-100 room-card">
-                    <img src="images/rooms/room-<?= $room['number'] ?>.jpg" 
-                         class="room-image" 
-                         alt="Room <?= $room['number'] ?>">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="card-title mb-0">Room <?= $room['number'] ?></h5>
-                            <span class="badge badge-um rounded-pill"><?= $room['capacity'] ?></span>
-                        </div>
-                        
-                        <div class="equipment-list mb-3">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-map-marker-alt me-2"></i>
-                                <?= $room['floor'] ?>
+                <div class="col">
+                    <div class="card h-100 room-card">
+                        <img src="images/rooms/room-<?= $room['number'] ?>.jpg" class="room-image"
+                            alt="Room <?= $room['number'] ?>">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0">Room <?= $room['number'] ?></h5>
+                                <span class="badge badge-um rounded-pill"><?= $room['capacity'] ?></span>
                             </div>
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-tools me-2"></i>
-                                <?= $room['equipment'] ?>
+
+                            <div class="equipment-list mb-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    <?= $room['floor'] ?>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-tools me-2"></i>
+                                    <?= $room['equipment'] ?>
+                                </div>
                             </div>
+
+                            <p class="card-text text-muted small mb-3">
+                                <?= $room['description'] ?>
+                            </p>
+
+                            <a href="student_reservation.php?room=<?= $room['number'] ?>" class="btn btn-um w-100">
+                                Reserve Now
+                            </a>
                         </div>
-                        
-                        <p class="card-text text-muted small mb-3">
-                            <?= $room['description'] ?>
-                        </p>
-                        
-                        <button class="btn btn-um w-100" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#bookingModal"
-                                data-room="<?= $room['number'] ?>">
-                            Reserve Now
-                        </button>
                     </div>
                 </div>
-            </div>
             <?php endforeach; ?>
         </div>
 
@@ -229,17 +251,18 @@ $rooms = [
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const bookingModal = document.getElementById('bookingModal');
-            bookingModal.addEventListener('show.bs.modal', function(event) {
+            bookingModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 const roomNumber = button.getAttribute('data-room');
                 const roomImg = button.closest('.room-card').querySelector('.room-image').src;
-                
+
                 document.getElementById('roomNumber').textContent = roomNumber;
                 document.getElementById('modalRoomImage').src = roomImg;
             });
         });
     </script>
 </body>
+
 </html>
