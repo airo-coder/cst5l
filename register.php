@@ -1,19 +1,10 @@
 <?php
+// Start session for error messages
 session_start();
 
-// Temporary bypass for demonstration - remove in production
-$_SESSION['user_id'] = 1;  // Remove this after adding real authentication
-$_SESSION['user_name'] = "Test User";  // Remove this after adding real authentication
-
-// Initialize error variable
-$error = $_SESSION['login_error'] ?? '';
-unset($_SESSION['login_error']);
-
-// Temporary auto-login bypass - remove these lines when implementing real auth
-if (!isset($_SESSION['user_id'])) {
-    $_SESSION['user_id'] = 1;      // Remove in production
-    $_SESSION['user_name'] = "Test User";  // Remove in production
-}
+// Check for existing error messages
+$error = $_SESSION['register_error'] ?? null;
+unset($_SESSION['register_error']);
 ?>
 
 <!DOCTYPE html>
@@ -21,7 +12,7 @@ if (!isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UM Library - Login</title>
+    <title>UM Library - Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -124,7 +115,17 @@ if (!isset($_SESSION['user_id'])) {
                     <div class="alert alert-danger mb-4"><?= htmlspecialchars($error) ?></div>
                     <?php endif; ?>
 
-                    <form action="authenticate.php" method="POST">
+                    <form action="register_process.php" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-icon">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input type="text" class="form-control" name="full_name" required>
+                            </div>
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label">UM Email</label>
                             <div class="input-group">
@@ -136,7 +137,17 @@ if (!isset($_SESSION['user_id'])) {
                             </div>
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-3">
+                            <label class="form-label">Student ID</label>
+                            <div class="input-group">
+                                <span class="input-icon">
+                                    <i class="fas fa-id-card"></i>
+                                </span>
+                                <input type="text" class="form-control" name="student_id" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">  <!-- Changed from mb-3 to mb-4 -->
                             <label class="form-label">Password</label>
                             <div class="input-group">
                                 <span class="input-icon">
@@ -147,12 +158,12 @@ if (!isset($_SESSION['user_id'])) {
                         </div>
 
                         <button type="submit" class="btn btn-um w-100 mb-3">
-                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            <i class="fas fa-user-plus me-2"></i>Register
                         </button>
 
                         <div class="auth-links text-center">
-                            <span class="text-muted">New user? </span>
-                            <a href="register.php">Create account</a>
+                            <span class="text-muted">Already have an account? </span>
+                            <a href="login.php">Login here</a>
                         </div>
                     </form>
                 </div>
