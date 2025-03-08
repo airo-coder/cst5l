@@ -192,9 +192,7 @@ $rooms = [
             margin-top: 5rem;
         }
 
-        .wave-divider svg path {
-            fill: rgba(255, 255, 255, 0.8);
-        }
+        
     </style>
 </head>
 <body>
