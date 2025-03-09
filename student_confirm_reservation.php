@@ -1,26 +1,118 @@
 <?php
 session_start();
-// Temporary development bypass - remove in production
-$_SESSION['user_id'] = 1;
-$_SESSION['user_name'] = "Test User";
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
-$reservation_details = [
-    'room_number' => $_POST['room_number'] ?? 'N/A',
-    'date' => $_POST['reservation_date'] ?? 'N/A',
-    'time_slot' => $_POST['time_slot'] ?? 'N/A',
-    'subject' => $_POST['subject'] ?? 'N/A',
-    'purpose' => $_POST['purpose'] ?? 'N/A'
-];
+require_once 'admin/includes/db_connection.php';
+
+$room_number = $_POST['room_number'] ?? '';
+$date = $_POST['reservation_date'] ?? '';
+$time_slot = $_POST['time_slot'] ?? '';
+$subject = $_POST['subject'] ?? '';
+$purpose = $_POST['purpose'] ?? '';
+
+if (empty($room_number) || empty($date) || empty($time_slot) || empty($subject) || empty($purpose)) {
+    $_SESSION['error'] = "Please fill in all fields.";
+    header("Location: student_reservation.php?room=$room_number");
+    exit();
+}
+
+$room_number = htmlspecialchars($room_number);
+$date = htmlspecialchars($date);
+$time_slot = htmlspecialchars($time_slot);
+$subject = htmlspecialchars($subject);
+$purpose = htmlspecialchars($purpose);
+
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+    $_SESSION['error'] = "Invalid date format.";
+    header("Location: student_reservation.php?room=$room_number");
+    exit();
+}
+
+try {
+    $stmt = $pdo->prepare("SELECT id FROM Rooms WHERE room_number = :room_number");
+    $stmt->execute(['room_number' => $room_number]);
+    $room = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$room) {
+        $_SESSION['error'] = "Invalid room number.";
+        header("Location: student_reservation.php?room=$room_number");
+        exit();
+    }
+
+    $room_id = $room['id'];
+} catch (PDOException $e) {
+    $_SESSION['error'] = "Database error: " . $e->getMessage();
+    header("Location: student_reservation.php?room=$room_number");
+    exit();
+}
+
+try {
+    $stmt = $pdo->prepare("
+        SELECT id FROM Bookings 
+        WHERE room_id = :room_id 
+        AND date = :date 
+        AND timeslot = :timeslot
+    ");
+    $stmt->execute([
+        'room_id' => $room_id,
+        'date' => $date,
+        'timeslot' => $time_slot
+    ]);
+    $conflicting_booking = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($conflicting_booking) {
+        $_SESSION['error'] = "The selected time slot is already booked.";
+        header("Location: student_reservation.php?room=$room_number");
+        exit();
+    }
+} catch (PDOException $e) {
+    $_SESSION['error'] = "Database error: " . $e->getMessage();
+    header("Location: student_reservation.php?room=$room_number");
+    exit();
+}
+
+try {
+    $stmt = $pdo->prepare("
+        INSERT INTO Bookings (user_id, room_id, date, timeslot, subject, purpose, status)
+        VALUES (:user_id, :room_id, :date, :timeslot, :subject, :purpose, 'pending')
+    ");
+    $stmt->execute([
+        'user_id' => $_SESSION['user_id'],
+        'room_id' => $room_id,
+        'date' => $date,
+        'timeslot' => $time_slot,
+        'subject' => $subject,
+        'purpose' => $purpose
+    ]);
+
+    $reservation_id = $pdo->lastInsertId();
+    $stmt = $pdo->prepare("
+        SELECT b.*, r.room_number 
+        FROM Bookings b
+        JOIN Rooms r ON b.room_id = r.id
+        WHERE b.id = :reservation_id
+    ");
+    $stmt->execute(['reservation_id' => $reservation_id]);
+    $reservation_details = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$reservation_details) {
+        $_SESSION['error'] = "Failed to fetch reservation details.";
+        header("Location: student_reservation.php?room=$room_number");
+        exit();
+    }
+} catch (PDOException $e) {
+    $_SESSION['error'] = "Database error: " . $e->getMessage();
+    header("Location: student_reservation.php?room=$room_number");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,15 +148,8 @@ $reservation_details = [
         }
 
         @keyframes bounce {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-20px);
-            }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
         .detail-item {
@@ -91,7 +176,6 @@ $reservation_details = [
         }
     </style>
 </head>
-
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--um-red);">
         <div class="container">
@@ -129,7 +213,7 @@ $reservation_details = [
 
                     <div class="detail-item">
                         <h5>Time Slot:</h5>
-                        <p class="lead"><?= htmlspecialchars($reservation_details['time_slot']) ?></p>
+                        <p class="lead"><?= htmlspecialchars($reservation_details['timeslot']) ?></p>
                     </div>
 
                     <div class="detail-item">
@@ -141,7 +225,6 @@ $reservation_details = [
                         <h5>Purpose:</h5>
                         <p class="lead"><?= htmlspecialchars($reservation_details['purpose']) ?></p>
                     </div>
-
                 </div>
 
                 <a href="student_home.php" class="btn btn-um btn-lg mt-4">
@@ -152,7 +235,7 @@ $reservation_details = [
     </main>
 
     <footer class="footer">
-    <div class="container">
+        <div class="container">
             <div class="row g-4">
                 <div class="col-md-4">
                     <h5>Contact Us</h5>
@@ -183,5 +266,4 @@ $reservation_details = [
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

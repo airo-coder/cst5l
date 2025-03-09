@@ -1,20 +1,35 @@
 <?php
 session_start();
-// Temporary development bypass - remove in production
-$_SESSION['user_id'] = 1;
-$_SESSION['user_name'] = "Test User";
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
+include 'admins/includes/db_connection.php';
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
+
 $room_number = $_GET['room'] ?? '';
+
+$stmt = $pdo->prepare("SELECT * FROM Rooms WHERE room_number = :room_number");
+$stmt->execute(['room_number' => $room_number]);
+$room = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$room) {
+    $_SESSION['error'] = "Room not found.";
+    header("Location: student_home.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -92,7 +107,6 @@ $room_number = $_GET['room'] ?? '';
             font-size: 0.9em;
         }
 
-
         .btn-um {
             background-color: var(--um-yellow);
             color: var(--um-red);
@@ -119,7 +133,6 @@ $room_number = $_GET['room'] ?? '';
         }
     </style>
 </head>
-
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--um-red);">
         <div class="container">
@@ -147,7 +160,7 @@ $room_number = $_GET['room'] ?? '';
             </svg>
         </div>
         <div class="container text-center">
-            <h1 class="display-4 mb-4">Reserve Room <?= htmlspecialchars($room_number) ?></h1>
+            <h1 class="display-4 mb-4">Reserve Room <?= htmlspecialchars($room['room_number']) ?></h1>
             <p class="lead">University of Mindanao Library Collaboration Spaces</p>
         </div>
     </section>
@@ -156,9 +169,8 @@ $room_number = $_GET['room'] ?? '';
         <div class="reservation-card card">
             <div class="card-body">
                 <form action="student_confirm_reservation.php" method="POST">
-                    <input type="hidden" name="room_number" value="<?= htmlspecialchars($room_number) ?>">
+                    <input type="hidden" name="room_number" value="<?= htmlspecialchars($room['room_number']) ?>">
 
-                    <!-- Date Selection -->
                     <div class="mb-4">
                         <label class="form-label">Date of Use</label>
                         <div class="input-group">
@@ -171,7 +183,6 @@ $room_number = $_GET['room'] ?? '';
                         <small class="text-muted">Available dates up to 2 weeks in advance</small>
                     </div>
 
-                    <!-- Time Slots -->
                     <div class="mb-4">
                         <label class="form-label">Time Slot</label>
                         <div class="row g-3">
@@ -205,8 +216,7 @@ $room_number = $_GET['room'] ?? '';
                             ?>
                         </div>
                     </div>
-
-                    <!-- Subject and Purpose Selection -->
+                    
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label">Subject</label>
@@ -283,5 +293,4 @@ $room_number = $_GET['room'] ?? '';
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

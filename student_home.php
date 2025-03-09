@@ -1,13 +1,32 @@
 <?php
 session_start();
-// Temporary session bypass - remove these lines after implementing authentication
-$_SESSION['user_id'] = 1;
-$_SESSION['user_name'] = "Gwen Peralta";
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+
+include 'admins/includes/db_connection.php';
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
+
+$stmt = $pdo->prepare("SELECT name FROM Users WHERE id = :user_id");
+$stmt->execute(['user_id' => $_SESSION['user_id']]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    session_unset();
+    session_destroy();
+    header("Location: login.php");
+    exit();
+}
+
+$user_name = $user['name'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -99,7 +118,7 @@ if (!isset($_SESSION['user_id'])) {
                         <a class="nav-link active" href="student_home.php">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="logout.php">Logout</a>
+                        <a class="nav-link" href="admin/logout.php">Logout</a>
                     </li>
                 </ul>
             </div>
@@ -113,7 +132,7 @@ if (!isset($_SESSION['user_id'])) {
             </svg>
         </div>
         <div class="container text-center">
-            <h1 class="display-4 mb-4">Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>!</h1>
+            <h1 class="display-4 mb-4">Welcome, <?= htmlspecialchars($user_name) ?>!</h1>
             <p class="lead mb-4">University of Mindanao Library Collaboration Rooms</p>
             <a href="student_booking.php" class="btn btn-um btn-lg">
                 <i class="fas fa-door-open me-2"></i>Book a Room Now

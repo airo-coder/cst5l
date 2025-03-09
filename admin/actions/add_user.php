@@ -1,60 +1,41 @@
 <?php
-include '../includes/header.php';
-include '../includes/sidebar.php';
+session_start(); // Start session for flash messages
 
+// Include the database connection file
+include '../includes/db_connection.php';
+
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
- 
     $name = $_POST['name'];
     $email = $_POST['email'];
     $role = $_POST['role'];
+    $password = $_POST['password']; // Get the password from the form
 
     // Validate input
-    if (!empty($name) && !empty($email) && !empty($role)) {
- 
-        $conn = new mysqli('localhost', 'username', 'password', 'database_name');
- 
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
+    if (!empty($name) && !empty($email) && !empty($role) && !empty($password)) {
+        try {
+            // Hash the password
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        $stmt = $conn->prepare("INSERT INTO users (name, email, role) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $name, $email, $role);
- 
-        if ($stmt->execute()) {
-            echo "<script>alert('User added successfully!'); window.location.href='../user_management.php';</script>";
-        } else {
-            echo "<script>alert('Error adding user: " . $stmt->error . "');</script>";
-        }
+            // Insert user into the database
+            $stmt = $pdo->prepare("INSERT INTO Users (name, email, role, password) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$name, $email, $role, $hashedPassword]);
 
-        $stmt->close();
-        $conn->close();
+            // Redirect with success message
+            $_SESSION['success'] = "User added successfully!";
+            header("Location: ../user_management.php");
+            exit();
+        } catch (PDOException $e) {
+            // Handle database errors
+            $_SESSION['error'] = "Error adding user: " . $e->getMessage();
+            header("Location: ../user_management.php");
+            exit();
+        }
     } else {
-        echo "<script>alert('Please fill in all required fields.');</script>";
+        // Handle validation errors
+        $_SESSION['error'] = "Please fill in all required fields.";
+        header("Location: ../user_management.php");
+        exit();
     }
 }
 ?>
-
-<div class="main-content container-fluid">
-    <h1>Add New User</h1>
-    <form action="add_user.php" method="POST">
-        <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" class="form-control" id="name" name="name" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" name="email" required>
-        </div>
-        <div class="form-group">
-            <label for="role">Role</label>
-            <select class="form-control" id="role" name="role" required>
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Add User</button>
-        <a href="../user_management.php" class="btn btn-secondary">Cancel</a>
-    </form>
-</div>
-
-<?php include '../includes/footer.php'; ?>

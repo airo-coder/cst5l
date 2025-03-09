@@ -1,35 +1,44 @@
 <?php
+// Include header and sidebar
 include '../includes/header.php';
 include '../includes/sidebar.php';
- 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') { 
 
+// Database connection
+$host = 'localhost';
+$dbname = 'wbdv';
+$username = 'root';
+$password = 'admin123';
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $room_number = $_POST['room_number'];
     $capacity = $_POST['capacity'];
     $equipment = $_POST['equipment'];
     $floor = $_POST['floor'];
     $description = $_POST['description'];
- 
+
+    // Validate input
     if (!empty($room_number) && !empty($capacity) && !empty($floor)) {
- 
-        $conn = new mysqli('localhost', 'username', 'password', 'database_name');
- 
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
- 
-        $stmt = $conn->prepare("INSERT INTO rooms (room_number, capacity, equipment, floor, description) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $room_number, $capacity, $equipment, $floor, $description);
- 
-        if ($stmt->execute()) {
+        try {
+            // Insert room into the database
+            $stmt = $pdo->prepare("INSERT INTO Rooms (room_number, capacity, equipment, floor, description) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$room_number, $capacity, $equipment, $floor, $description]);
+
+            // Redirect with success message
             echo "<script>alert('Room added successfully!'); window.location.href='../room_management.php';</script>";
-        } else {
-            echo "<script>alert('Error adding room: " . $stmt->error . "');</script>";
+        } catch (PDOException $e) {
+            // Handle database errors
+            echo "<script>alert('Error adding room: " . $e->getMessage() . "');</script>";
         }
- 
-        $stmt->close();
-        $conn->close();
     } else {
+        // Handle validation errors
         echo "<script>alert('Please fill in all required fields.');</script>";
     }
 }
