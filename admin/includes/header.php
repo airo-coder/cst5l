@@ -12,7 +12,7 @@
         <div class="container-fluid">
 
             <!-- Logo -->
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="#" style="background-color: var(--um-red);">
                 <img src="assets/images/um-logo.png" alt="Logo" width="30" height="30" class="d-inline-block align-text-top">
                 Collaboration Room Reservation
             </a>
