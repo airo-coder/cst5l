@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Add your CSS links here if needed -->
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--um-red);">
         <div class="container">
@@ -15,8 +17,12 @@
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'student_home.php' ? 'active' : '' ?>" 
-                           href="student_home.php">Home</a>
+                        <a class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'student_home.php' ? 'active' : '' ?>"
+                            href="student_home.php">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'my_bookings.php' ? 'active' : '' ?>"
+                            href="my_bookings.php">My Bookings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="admin/logout.php">Logout</a>
