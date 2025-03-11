@@ -130,7 +130,8 @@ $error = '';
                                 <input type="email" class="form-control" name="email" placeholder="name@umindanao.edu.ph" required>
                             </div>
                         </div>
-
+                
+                    
     <div class="mb-4">
         <label class="form-label">Password</label>
         <div class="input-group">
