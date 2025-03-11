@@ -220,8 +220,8 @@ $user_name = $user['name'];
                 <div class="col-md-4 text-end">
                     <h5>Follow Us</h5>
                     <div class="social-links">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-twitter fa-2x"></i></a>
+                        <a href="https://www.facebook.com/UMindanaoLIC" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                        <a href="https://x.com/uniminofficial?lang=en" class="text-white"><i class="fab fa-twitter fa-2x"></i></a>
                     </div>
                 </div>
             </div>

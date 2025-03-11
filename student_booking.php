@@ -96,6 +96,7 @@ $rooms = [
 ?>
 
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -133,14 +134,14 @@ $rooms = [
             position: relative;
         }
 
-        
+
         .wave-divider svg path {
             fill: rgba(255, 255, 255, 0.8);
         }
 
         .room-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
         .room-image {
@@ -182,7 +183,7 @@ $rooms = [
 
         .btn-um:hover {
             transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(204,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(204, 0, 0, 0.2);
         }
 
         .footer {
@@ -191,10 +192,9 @@ $rooms = [
             padding: 3rem 0 1rem;
             margin-top: 5rem;
         }
-
-        
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--um-red);">
         <div class="container">
@@ -230,31 +230,29 @@ $rooms = [
     <main class="container my-5">
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <?php foreach ($rooms as $room): ?>
-            <div class="col">
-                <div class="card h-100 room-card">
-                    <div class="floor-badge"><?= $room['floor'] ?></div>
-                    <div class="capacity-badge"><?= $room['capacity'] ?></div>
-                    <img src="images/rooms/room-<?= $room['number'] ?>.jpg" 
-                         class="room-image" 
-                         alt="Room <?= $room['number'] ?>">
-                    <div class="card-body">
-                        <h5 class="card-title">Room <?= $room['number'] ?></h5>
-                        <div class="equipment-list mb-3">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-tools text-um-red me-2"></i>
-                                <?= $room['equipment'] ?>
+                <div class="col">
+                    <div class="card h-100 room-card">
+                        <div class="floor-badge"><?= $room['floor'] ?></div>
+                        <div class="capacity-badge"><?= $room['capacity'] ?></div>
+                        <img src="images/rooms/room-<?= $room['number'] ?>.jpg" class="room-image"
+                            alt="Room <?= $room['number'] ?>">
+                        <div class="card-body">
+                            <h5 class="card-title">Room <?= $room['number'] ?></h5>
+                            <div class="equipment-list mb-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-tools text-um-red me-2"></i>
+                                    <?= $room['equipment'] ?>
+                                </div>
                             </div>
+                            <p class="card-text text-muted small">
+                                <?= $room['description'] ?>
+                            </p>
+                            <a href="student_reservation.php?room=<?= $room['number'] ?>" class="btn btn-um w-100">
+                                Reserve Now <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
                         </div>
-                        <p class="card-text text-muted small">
-                            <?= $room['description'] ?>
-                        </p>
-                        <a href="student_reservation.php?room=<?= $room['number'] ?>" 
-                           class="btn btn-um w-100">
-                            Reserve Now <i class="fas fa-arrow-right ms-2"></i>
-                        </a>
                     </div>
                 </div>
-            </div>
             <?php endforeach; ?>
         </div>
     </main>
@@ -279,8 +277,10 @@ $rooms = [
                 <div class="col-md-4 text-end">
                     <h5>Follow Us</h5>
                     <div class="social-links">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-twitter fa-2x"></i></a>
+                        <a href="https://www.facebook.com/UMindanaoLIC" class="text-white me-3"><i
+                                class="fab fa-facebook fa-2x"></i></a>
+                        <a href="https://x.com/uniminofficial?lang=en" class="text-white"><i
+                                class="fab fa-twitter fa-2x"></i></a>
                     </div>
                 </div>
             </div>
@@ -291,4 +291,5 @@ $rooms = [
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

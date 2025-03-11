@@ -30,6 +30,7 @@ if (!$room) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -133,6 +134,7 @@ if (!$room) {
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--um-red);">
         <div class="container">
@@ -216,7 +218,7 @@ if (!$room) {
                             ?>
                         </div>
                     </div>
-                    
+
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label">Subject</label>
@@ -281,8 +283,10 @@ if (!$room) {
                 <div class="col-md-4 text-end">
                     <h5>Follow Us</h5>
                     <div class="social-links">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-twitter fa-2x"></i></a>
+                        <a href="https://www.facebook.com/UMindanaoLIC" class="text-white me-3"><i
+                                class="fab fa-facebook fa-2x"></i></a>
+                        <a href="https://x.com/uniminofficial?lang=en" class="text-white"><i
+                                class="fab fa-twitter fa-2x"></i></a>
                     </div>
                 </div>
             </div>
@@ -293,4 +297,5 @@ if (!$room) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

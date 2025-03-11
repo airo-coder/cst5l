@@ -113,6 +113,7 @@ try {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -148,8 +149,15 @@ try {
         }
 
         @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
         }
 
         .detail-item {
@@ -176,6 +184,7 @@ try {
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--um-red);">
         <div class="container">
@@ -254,8 +263,10 @@ try {
                 <div class="col-md-4 text-end">
                     <h5>Follow Us</h5>
                     <div class="social-links">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-twitter fa-2x"></i></a>
+                        <a href="https://www.facebook.com/UMindanaoLIC" class="text-white me-3"><i
+                                class="fab fa-facebook fa-2x"></i></a>
+                        <a href="https://x.com/uniminofficial?lang=en" class="text-white"><i
+                                class="fab fa-twitter fa-2x"></i></a>
                     </div>
                 </div>
             </div>
@@ -266,4 +277,5 @@ try {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
