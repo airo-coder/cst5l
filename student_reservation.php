@@ -132,6 +132,13 @@ if (!$room) {
             padding: 3rem 0 1rem;
             margin-top: 5rem;
         }
+        /* New CSS to disable pointer events on disabled time slots */
+        .time-slot-disabled,
+        .time-slot-disabled label,
+        .time-slot-disabled input[type="radio"] {
+            pointer-events: none;
+            opacity: 0.6;
+        }
     </style>
 </head>
 
@@ -153,7 +160,7 @@ if (!$room) {
     <main class="container my-5">
         <div class="reservation-card card">
             <div class="card-body">
-                <form action="student_confirm_reservation.php" method="POST">
+                <form action="student_confirm_reservation.php" method="POST" id="reservationForm">
                     <input type="hidden" name="room_number" value="<?= htmlspecialchars($room['room_number']) ?>">
 
                     <div class="mb-4">
@@ -162,7 +169,7 @@ if (!$room) {
                             <span class="input-group-text bg-um-red text-white">
                                 <i class="fas fa-calendar-alt"></i>
                             </span>
-                            <input type="date" class="form-control" name="reservation_date" required
+                            <input type="date" class="form-control" name="reservation_date" id="reservation_date" required
                                 min="<?= date('Y-m-d') ?>">
                         </div>
                         <small class="text-muted">Available dates up to 2 weeks in advance</small>
@@ -170,7 +177,7 @@ if (!$room) {
 
                     <div class="mb-4">
                         <label class="form-label">Time Slot</label>
-                        <div class="row g-3">
+                        <div class="row g-3" id="timeSlotsContainer">
                             <?php
                             $start = strtotime('8:00');
                             $end = strtotime('21:30');
@@ -183,14 +190,14 @@ if (!$room) {
 
                                 $end_time = strtotime('+1 hour', $start);
                                 $time_slot = date('g:i A', $start) . ' - ' . date('g:i A', $end_time);
+                                $radioId = "slot_" . date('Hi', $start);
 
                                 echo '
                                 <div class="col-12 col-md-6">
-                                    <div class="time-slot-card">
-                                        <input type="radio" name="time_slot" id="slot_' . date('Hi', $start) . '" 
+                                    <div class="time-slot-card" id="card_' . $radioId . '">
+                                        <input type="radio" name="time_slot" id="' . $radioId . '" 
                                                value="' . $time_slot . '" class="d-none" required>
-                                        <label for="slot_' . date('Hi', $start) . '" 
-                                               class="d-block p-3 m-0 position-relative">
+                                        <label for="' . $radioId . '" class="d-block p-3 m-0 position-relative">
                                             ' . $time_slot . '
                                         </label>
                                     </div>
@@ -230,8 +237,7 @@ if (!$room) {
                                 <option value="DISCUSSION">DISCUSSION</option>
                                 <option value="CONDUCT REVIEW">CONDUCT REVIEW</option>
                                 <option value="PREPARATION FOR EXAM">PREPARATION FOR EXAM</option>
-                                <option value="PRACTICE FOR THESES/DISSERTATION DEFENSE">PRACTICE FOR
-                                    THESES/DISSERTATION DEFENSE</option>
+                                <option value="PRACTICE FOR THESES/DISSERTATION DEFENSE">PRACTICE FOR THESES/DISSERTATION DEFENSE</option>
                             </select>
                         </div>
                     </div>
@@ -249,6 +255,50 @@ if (!$room) {
     <?php include 'student_footer.php'?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to update the availability of time slots
+        function updateTimeSlotAvailability(date) {
+            const roomNumber = document.querySelector('input[name="room_number"]').value;
+            fetch('check_availability.php?room_number=' + encodeURIComponent(roomNumber) + '&date=' + encodeURIComponent(date))
+                .then(response => response.json())
+                .then(bookedSlots => {
+                    // Get all time slot cards
+                    const timeSlotCards = document.querySelectorAll('#timeSlotsContainer .time-slot-card');
+                    
+                    timeSlotCards.forEach(card => {
+                        const radio = card.querySelector('input[type="radio"]');
+                        const label = card.querySelector('label');
+
+                        // Remove any previous disabled styles
+                        card.classList.remove('time-slot-disabled');
+
+                        // Reset label text (remove any added "Taken" text)
+                        label.innerHTML = label.innerHTML.replace(/ <span class="text-danger">\(Taken\)<\/span>/, '');
+
+                        // Check if this time slot is booked
+                        if (bookedSlots.includes(radio.value)) {
+                            radio.disabled = true;
+                            // Append " (Taken)" indicator
+                            label.innerHTML += ' <span class="text-danger">(Taken)</span>';
+                            // Add disabled class to card
+                            card.classList.add('time-slot-disabled');
+                        } else {
+                            radio.disabled = false;
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching availability:', error));
+        }
+
+        // Listen for changes to the reservation date input
+        const reservationDateInput = document.getElementById('reservation_date');
+        reservationDateInput.addEventListener('change', function () {
+            const selectedDate = this.value;
+            if (selectedDate) {
+                updateTimeSlotAvailability(selectedDate);
+            }
+        });
+    </script>
 </body>
 
 </html>
