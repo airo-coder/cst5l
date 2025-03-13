@@ -2,77 +2,106 @@
 session_start();
 include 'includes/header.php';
 include 'includes/sidebar.php';
-
 include 'includes/db_connection.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 
+// Get filter parameters from the URL
+$id = $_GET['id'] ?? '';
 $name = $_GET['name'] ?? '';
-$email = $_GET['email'] ?? '';
 $role = $_GET['role'] ?? '';
 
+// Pagination
 $page = $_GET['page'] ?? 1;
-$limit = 10; 
+$limit = 10;
 $offset = ($page - 1) * $limit;
 
+// Base query
 $query = "SELECT id, name, email, role FROM Users WHERE 1=1";
+$types = '';
 $params = [];
 
-if (!empty($name)) {
-    $query .= " AND name LIKE :name";
-    $params['name'] = "%$name%";
+// Add filters if provided
+if (!empty($id)) {
+    $query .= " AND id = ?";
+    $types .= 'i';
+    $params[] = $id;
 }
 
-if (!empty($email)) {
-    $query .= " AND email LIKE :email";
-    $params['email'] = "%$email%";
+if (!empty($name)) {
+    $query .= " AND name LIKE ?";
+    $types .= 's';
+    $params[] = "%$name%";
 }
 
 if (!empty($role)) {
-    $query .= " AND role = :role";
-    $params['role'] = $role;
+    $query .= " AND role = ?";
+    $types .= 's';
+    $params[] = $role;
 }
 
-$query .= " ORDER BY id ASC LIMIT :limit OFFSET :offset";
-$params['limit'] = $limit;
-$params['offset'] = $offset;
+// Add pagination
+$query .= " ORDER BY id ASC LIMIT ? OFFSET ?";
+$types .= 'ii';
+$params[] = $limit;
+$params[] = $offset;
 
-$stmt = $pdo->prepare($query);
-foreach ($params as $key => &$value) {
-    $stmt->bindParam($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+// Prepare and execute the query
+$stmt = $conn->prepare($query);
+if ($stmt) {
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $users = $result->fetch_all(MYSQLI_ASSOC);
+} else {
+    die("Error preparing query: " . $conn->error);
 }
-$stmt->execute();
-$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Total users query (for pagination)
 $totalUsersQuery = "SELECT COUNT(*) FROM Users WHERE 1=1";
-if (!empty($name)) {
-    $totalUsersQuery .= " AND name LIKE :name";
-}
-if (!empty($email)) {
-    $totalUsersQuery .= " AND email LIKE :email";
-}
-if (!empty($role)) {
-    $totalUsersQuery .= " AND role = :role";
+$totalParams = [];
+$totalTypes = '';
+
+if (!empty($id)) {
+    $totalUsersQuery .= " AND id = ?";
+    $totalTypes .= 'i';
+    $totalParams[] = $id;
 }
 
-$totalStmt = $pdo->prepare($totalUsersQuery);
 if (!empty($name)) {
-    $totalStmt->bindParam(':name', $name);
+    $totalUsersQuery .= " AND name LIKE ?";
+    $totalTypes .= 's';
+    $totalParams[] = "%$name%";
 }
-if (!empty($email)) {
-    $totalStmt->bindParam(':email', $email);
-}
+
 if (!empty($role)) {
-    $totalStmt->bindParam(':role', $role);
+    $totalUsersQuery .= " AND role = ?";
+    $totalTypes .= 's';
+    $totalParams[] = $role;
 }
-$totalStmt->execute();
-$totalUsers = $totalStmt->fetchColumn();
-$totalPages = ceil($totalUsers / $limit);
+
+$totalStmt = $conn->prepare($totalUsersQuery);
+if ($totalStmt) {
+    if (!empty($totalParams)) {
+        $totalStmt->bind_param($totalTypes, ...$totalParams);
+    }
+    $totalStmt->execute();
+    $totalResult = $totalStmt->get_result();
+    $totalUsers = $totalResult->fetch_row()[0];
+    $totalPages = ceil($totalUsers / $limit);
+} else {
+    die("Error preparing total users query: " . $conn->error);
+}
+
+$stmt->close();
+$totalStmt->close();
+$conn->close();
 ?>
 
 <div class="main-content container-fluid">
@@ -92,20 +121,20 @@ $totalPages = ceil($totalUsers / $limit);
                 <div class="modal-body">
                     <form id="addUserForm" action="actions/add_user.php" method="POST">
                         <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
+                            <label for="add_name">Name</label>
+                            <input type="text" class="form-control" id="add_name" name="add_name" required>
                         </div>
                         <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <label for="add_email">Email</label>
+                            <input type="email" class="form-control" id="add_email" name="add_email" required>
                         </div>
                         <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <label for="add_password">Password</label>
+                            <input type="password" class="form-control" id="add_password" name="add_password" required>
                         </div>
                         <div class="form-group">
-                            <label for="role">Role</label>
-                            <select class="form-control" id="role" name="role" required>
+                            <label for="add_role">Role</label>
+                            <select class="form-control" id="add_role" name="add_role" required>
                                 <option value="admin">Admin</option>
                                 <option value="user">User</option>
                             </select>
@@ -120,61 +149,58 @@ $totalPages = ceil($totalUsers / $limit);
         </div>
     </div>
 
-<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editUserForm" action="actions/edit_user.php" method="POST">
-                    <input type="hidden" name="id" id="editUserId">
-                    <div class="form-group">
-                        <label for="editName">Name</label>
-                        <input type="text" class="form-control" id="editName" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="editEmail">Email</label>
-                        <input type="email" class="form-control" id="editEmail" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="editRole">Role</label>
-                        <select class="form-control" id="editRole" name="role" required>
-                            <option value="admin">Admin</option>
-                            <option value="user">User</option>
-                        </select>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Update User</button>
-                    </div>
-                </form>
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm" action="actions/edit_user.php" method="POST">
+                        <input type="hidden" name="id" id="editUserId">
+                        <div class="form-group">
+                            <label for="editName">Name</label>
+                            <input type="text" class="form-control" id="editName" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEmail">Email</label>
+                            <input type="email" class="form-control" id="editEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRole">Role</label>
+                            <select class="form-control" id="editRole" name="role" required>
+                                <option value="admin">Admin</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update User</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-    <form method="GET" class="mb-4">
+    <form method="GET" class="mb-4" id="filterForm">
         <div class="row g-3">
             <div class="col-md-4">
-                <label for="name" class="form-label">Name</label>
-                <input type="text" name="name" id="name" class="form-control" placeholder="Search by name">
+                <label for="id" class="form-label">ID</label>
+                <input type="number" name="id" id="id" class="form-control" placeholder="Search by ID" value="<?= htmlspecialchars($id ?? '') ?>">
             </div>
             <div class="col-md-4">
-                <label for="email" class="form-label">Email</label>
-                <input type="text" name="email" id="email" class="form-control" placeholder="Search by email">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" name="name" id="name" class="form-control" placeholder="Search by name" value="<?= htmlspecialchars($name ?? '') ?>">
             </div>
             <div class="col-md-4">
                 <label for="role" class="form-label">Role</label>
                 <select name="role" id="role" class="form-select">
                     <option value="">All</option>
-                    <option value="admin">Admin</option>
-                    <option value="user">User</option>
+                    <option value="admin" <?= ($role ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
+                    <option value="user" <?= ($role ?? '') === 'user' ? 'selected' : '' ?>>User</option>
                 </select>
-            </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100 mt-4">Filter</button>
             </div>
         </div>
     </form>
@@ -210,35 +236,43 @@ $totalPages = ceil($totalUsers / $limit);
     </div>
 
     <nav aria-label="Users Pagination" class="mt-4">
-        <ul class="pagination justify-content-center">
-            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-            <li class="page-item <?= $page == $i ? 'active' : '' ?>">
-                <a class="page-link" href="?page=<?= $i ?>&name=<?= $name ?>&email=<?= $email ?>&role=<?= $role ?>"><?= $i ?></a>
-            </li>
-            <?php endfor; ?>
-        </ul>
-    </nav>
+    <ul class="pagination justify-content-center">
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+        <li class="page-item <?= $page == $i ? 'active' : '' ?>">
+            <a class="page-link" href="?page=<?= $i ?>&id=<?= $id ?>&name=<?= $name ?>&role=<?= $role ?>"><?= $i ?></a>
+        </li>
+        <?php endfor; ?>
+    </ul>
+</nav>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-$(document).ready(function () {
-    $('.edit-user-btn').on('click', function () {
-        var userId = $(this).data('id');
-        var row = $(this).closest('tr');
-        var name = row.find('td:eq(1)').text();
-        var email = row.find('td:eq(2)').text();
-        var role = row.find('td:eq(3)').text();
+    document.addEventListener('DOMContentLoaded', function () {
+    const filterForm = document.getElementById('filterForm');
+    const idInput = document.getElementById('id');
+    const nameInput = document.getElementById('name');
+    const roleSelect = document.getElementById('role');
 
-        $('#editUserId').val(userId);
-        $('#editName').val(name);
-        $('#editEmail').val(email);
-        $('#editRole').val(role);
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
 
-        $('#editUserModal').modal('show');
-    });
+    function submitForm() {
+        filterForm.submit();
+    }
+
+    const debouncedSubmitForm = debounce(submitForm, 500);
+
+    idInput.addEventListener('input', debouncedSubmitForm);
+    nameInput.addEventListener('input', debouncedSubmitForm);
+    roleSelect.addEventListener('change', submitForm);
 });
 </script>
 

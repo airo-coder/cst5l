@@ -10,16 +10,25 @@ if (!isset($_GET['id'])) {
 
 $user_id = $_GET['id'];
 
-try {
-    $stmt = $pdo->prepare("DELETE FROM Users WHERE id = ?");
-    $stmt->execute([$user_id]);
+$conn = new mysqli($host, $username, $password, $dbname);
 
-    if ($stmt->rowCount() > 0) {
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
+}
+
+$stmt = $conn->prepare("DELETE FROM Users WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+
+if ($stmt->execute()) {
+    if ($stmt->affected_rows > 0) {
         echo "<script>alert('User deleted successfully!'); window.location.href='../user_management.php';</script>";
     } else {
         echo "<script>alert('User not found or already deleted.'); window.location.href='../user_management.php';</script>";
     }
-} catch (PDOException $e) {
-    echo "<script>alert('Error deleting user: " . $e->getMessage() . "'); window.location.href='../user_management.php';</script>";
+} else {
+    echo "<script>alert('Error deleting user: " . $stmt->error . "'); window.location.href='../user_management.php';</script>";
 }
+
+$stmt->close();
+$conn->close();
 ?>

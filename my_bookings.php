@@ -8,11 +8,10 @@ if (!isset($_SESSION['user_id'])) {
 include 'student_header.php';
 include 'admin/includes/db_connection.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 
 $date = $_GET['date'] ?? '';
@@ -24,36 +23,45 @@ $offset = ($page - 1) * $limit;
 $query = "SELECT b.id, r.room_number, b.date, b.timeslot, b.subject, b.purpose, b.status 
           FROM Bookings b
           JOIN Rooms r ON b.room_id = r.id
-          WHERE b.user_id = :user_id";
+          WHERE b.user_id = ?";
 
-$params = [':user_id' => $_SESSION['user_id']];
+$params = [$_SESSION['user_id']];
+$types = "i";
 
 if (!empty($date)) {
-    $query .= " AND b.date = :date";
-    $params[':date'] = $date;
+    $query .= " AND b.date = ?";
+    $params[] = $date;
+    $types .= "s";
 }
 
 if (!empty($status)) {
-    $query .= " AND b.status = :status";
-    $params[':status'] = $status;
+    $query .= " AND b.status = ?";
+    $params[] = $status;
+    $types .= "s";
 }
 
-$query .= " ORDER BY b.date DESC, b.timeslot ASC LIMIT :limit OFFSET :offset";
+$query .= " ORDER BY b.date DESC, b.timeslot ASC LIMIT ? OFFSET ?";
+$params[] = $limit;
+$params[] = $offset;
+$types .= "ii";
 
-$stmt = $pdo->prepare($query);
-foreach ($params as $key => &$value) {
-    $stmt->bindParam($key, $value, PDO::PARAM_STR);
-}
-$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt = $conn->prepare($query);
+$stmt->bind_param($types, ...$params);
 $stmt->execute();
-$bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$result = $stmt->get_result();
+$bookings = $result->fetch_all(MYSQLI_ASSOC);
 
-$totalQuery = "SELECT COUNT(*) FROM Bookings WHERE user_id = :user_id";
-$totalStmt = $pdo->prepare($totalQuery);
-$totalStmt->execute([':user_id' => $_SESSION['user_id']]);
-$totalBookings = $totalStmt->fetchColumn();
+$totalQuery = "SELECT COUNT(*) FROM Bookings WHERE user_id = ?";
+$totalStmt = $conn->prepare($totalQuery);
+$totalStmt->bind_param("i", $_SESSION['user_id']);
+$totalStmt->execute();
+$totalResult = $totalStmt->get_result();
+$totalBookings = $totalResult->fetch_row()[0];
 $totalPages = ceil($totalBookings / $limit);
+
+$stmt->close();
+$totalStmt->close();
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -165,34 +173,27 @@ $totalPages = ceil($totalBookings / $limit);
     </section>
 
     <main class="container my-5">
-        <!-- Filter Section -->
         <div class="filter-card card mb-5 p-4">
-            <form method="GET">
+            <form method="GET" id="filterForm">
                 <div class="row g-3 align-items-end">
                     <div class="col-md-4">
                         <label class="form-label">Filter by Date</label>
                         <input type="date" name="date" class="form-control" 
-                               value="<?= htmlspecialchars($date) ?>">
+                            value="<?= htmlspecialchars($date) ?>" id="filterDate">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
+                        <select name="status" class="form-select" id="filterStatus">
                             <option value="">All Statuses</option>
                             <option value="pending" <?= $status === 'pending' ? 'selected' : '' ?>>Pending</option>
                             <option value="approved" <?= $status === 'approved' ? 'selected' : '' ?>>Approved</option>
                             <option value="rejected" <?= $status === 'rejected' ? 'selected' : '' ?>>Rejected</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn btn-um w-100">
-                            <i class="fas fa-filter me-2"></i>Filter
-                        </button>
-                    </div>
                 </div>
             </form>
         </div>
 
-        <!-- Bookings Grid -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <?php foreach ($bookings as $booking): ?>
             <div class="col">
@@ -240,7 +241,6 @@ $totalPages = ceil($totalBookings / $limit);
         </div>
         <?php endif; ?>
 
-        <!-- Pagination -->
         <?php if ($totalPages > 1): ?>
         <nav aria-label="Bookings navigation" class="mt-5">
             <ul class="pagination justify-content-center">
@@ -261,5 +261,19 @@ $totalPages = ceil($totalBookings / $limit);
     <?php include 'student_footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script> 
+    const filterForm = document.getElementById('filterForm');
+    const filterDate = document.getElementById('filterDate');
+    const filterStatus = document.getElementById('filterStatus');
+
+    filterDate.addEventListener('change', () => {
+        filterForm.submit(); 
+    });
+
+    filterStatus.addEventListener('change', () => {
+        filterForm.submit();
+    });
+</script>
 </body>
 </html>

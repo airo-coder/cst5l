@@ -29,3 +29,27 @@
 .sidebar .mt-auto {
     margin-top: auto;
 }
+
+.dropdown-menu {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    min-width: auto !important;
+    width: fit-content !important;
+  }
+
+  .custom-logout {
+    background-color: transparent;
+    color: inherit;
+    padding: 3px 20px;
+    height: 30px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  
+  .custom-logout:hover {
+    background-color: #b10000; 
+    color: #fff;
+  }
+  

@@ -2,13 +2,12 @@
 session_start();
 include 'includes/header.php';
 include 'includes/sidebar.php';
-
 include 'includes/db_connection.php';
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 
 $floor = $_GET['floor'] ?? '';
@@ -16,83 +15,114 @@ $capacity = $_GET['capacity'] ?? '';
 $equipment = $_GET['equipment'] ?? '';
 
 $page = $_GET['page'] ?? 1;
-$limit = 10; 
+$limit = 10;
 $offset = ($page - 1) * $limit;
 
 $query = "SELECT * FROM Rooms WHERE 1=1";
+$types = '';
 $params = [];
 
 if (!empty($floor)) {
-    $query .= " AND floor LIKE :floor";
-    $params['floor'] = "%$floor%";
+    $query .= " AND floor LIKE ?";
+    $types .= 's';
+    $params[] = "%$floor%";
 }
 
 if (!empty($capacity)) {
-    $query .= " AND capacity = :capacity";
-    $params['capacity'] = $capacity;
+    $query .= " AND capacity = ?";
+    $types .= 'i';
+    $params[] = $capacity;
 }
 
 if (!empty($equipment)) {
-    $query .= " AND equipment LIKE :equipment";
-    $params['equipment'] = "%$equipment%";
+    $query .= " AND equipment LIKE ?";
+    $types .= 's';
+    $params[] = "%$equipment%";
 }
 
-$query .= " ORDER BY room_number ASC LIMIT :limit OFFSET :offset";
-$params['limit'] = $limit;
-$params['offset'] = $offset;
+$query .= " ORDER BY room_number ASC LIMIT ? OFFSET ?";
+$types .= 'ii';
+$params[] = $limit;
+$params[] = $offset;
 
-$stmt = $pdo->prepare($query);
-foreach ($params as $key => &$value) {
-    $stmt->bindParam($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+$stmt = $conn->prepare($query);
+if ($stmt) {
+    if (!empty($types)) {
+        $bindParams = [$types];
+        foreach ($params as &$param) {
+            $bindParams[] = &$param;
+        }
+        call_user_func_array([$stmt, 'bind_param'], $bindParams);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $rooms = $result->fetch_all(MYSQLI_ASSOC);
+} else {
+    die("Error preparing query: " . $conn->error);
 }
-$stmt->execute();
-$rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $totalRoomsQuery = "SELECT COUNT(*) FROM Rooms WHERE 1=1";
 if (!empty($floor)) {
-    $totalRoomsQuery .= " AND floor LIKE :floor";
+    $totalRoomsQuery .= " AND floor LIKE ?";
 }
 if (!empty($capacity)) {
-    $totalRoomsQuery .= " AND capacity = :capacity";
+    $totalRoomsQuery .= " AND capacity = ?";
 }
 if (!empty($equipment)) {
-    $totalRoomsQuery .= " AND equipment LIKE :equipment";
+    $totalRoomsQuery .= " AND equipment LIKE ?";
 }
 
-$totalStmt = $pdo->prepare($totalRoomsQuery);
-if (!empty($floor)) {
-    $totalStmt->bindParam(':floor', $floor);
+$totalStmt = $conn->prepare($totalRoomsQuery);
+if ($totalStmt) {
+    $totalTypes = '';
+    $totalParams = [];
+
+    if (!empty($floor)) {
+        $totalTypes .= 's';
+        $totalParams[] = "%$floor%";
+    }
+    if (!empty($capacity)) {
+        $totalTypes .= 'i';
+        $totalParams[] = $capacity;
+    }
+    if (!empty($equipment)) {
+        $totalTypes .= 's';
+        $totalParams[] = "%$equipment%";
+    }
+
+    if (!empty($totalTypes)) {
+        $bindTotalParams = [$totalTypes];
+        foreach ($totalParams as &$param) {
+            $bindTotalParams[] = &$param;
+        }
+        call_user_func_array([$totalStmt, 'bind_param'], $bindTotalParams);
+    }
+
+    $totalStmt->execute();
+    $totalResult = $totalStmt->get_result();
+    $totalRooms = $totalResult->fetch_row()[0];
+    $totalPages = ceil($totalRooms / $limit);
+} else {
+    die("Error preparing total rooms query: " . $conn->error);
 }
-if (!empty($capacity)) {
-    $totalStmt->bindParam(':capacity', $capacity);
-}
-if (!empty($equipment)) {
-    $totalStmt->bindParam(':equipment', $equipment);
-}
-$totalStmt->execute();
-$totalRooms = $totalStmt->fetchColumn();
-$totalPages = ceil($totalRooms / $limit);
+
+$stmt->close();
+$totalStmt->close();
+$conn->close();
 ?>
 
 <div class="main-content container-fluid">
-    <h1>Room Management</h1>
+    <h1 class="mb-3">Room Management</h1>
 
-    <form method="GET" class="mb-4">
+    <form method="GET" class="mb-4" id="filterForm">
         <div class="row g-3">
             <div class="col-md-3">
                 <label for="floor" class="form-label">Floor</label>
-                <input type="text" name="floor" id="floor" class="form-control" placeholder="Search by floor">
+                <input type="text" name="floor" id="floor" class="form-control" placeholder="Search by floor" value="<?= htmlspecialchars($floor ?? '') ?>">
             </div>
             <div class="col-md-3">
                 <label for="capacity" class="form-label">Capacity</label>
-                <input type="number" name="capacity" id="capacity" class="form-control" placeholder="Search by capacity">
-            </div>
-            <div class="col-md-3">
-                <label for="equipment" class="form-label">Equipment</label>
-                <input type="text" name="equipment" id="equipment" class="form-control" placeholder="Search by equipment">
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100 mt-4">Filter</button>
+                <input type="number" name="capacity" id="capacity" class="form-control" placeholder="Search by capacity" value="<?= htmlspecialchars($capacity ?? '') ?>">
             </div>
         </div>
     </form>
@@ -129,13 +159,12 @@ $totalPages = ceil($totalRooms / $limit);
         <ul class="pagination justify-content-center">
             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
             <li class="page-item <?= $page == $i ? 'active' : '' ?>">
-                <a class="page-link" href="?page=<?= $i ?>&floor=<?= $floor ?>&capacity=<?= $capacity ?>&equipment=<?= $equipment ?>"><?= $i ?></a>
+                <a class="page-link" href="?page=<?= $i ?>&floor=<?= urlencode($floor ?? '') ?>&capacity=<?= urlencode($capacity ?? '') ?>&equipment=<?= urlencode($equipment ?? '') ?>"><?= $i ?></a>
             </li>
             <?php endfor; ?>
         </ul>
     </nav>
-
-    <a href="actions/add_room.php" class="btn btn-primary">Add New Room</a>
+</div>
 
 <div class="modal fade" id="editRoomModal" tabindex="-1" aria-labelledby="editRoomModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -176,11 +205,28 @@ $totalPages = ceil($totalRooms / $limit);
         </div>
     </div>
 </div>
-</div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-$(document).ready(function () {
+    $(document).ready(function () {
+        const filterForm = document.getElementById('filterForm');
+        const floorInput = document.getElementById('floor');
+        const capacityInput = document.getElementById('capacity');
+
+        let debounceTimer;
+
+        function debounceSubmit() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                filterForm.submit();
+            }, 500);
+        }
+
+        floorInput.addEventListener('input', debounceSubmit);
+        capacityInput.addEventListener('input', debounceSubmit);
+
     $('.edit-room-btn').on('click', function () {
         var roomId = $(this).data('id'); 
         var row = $(this).closest('tr');

@@ -8,11 +8,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 
 include '../includes/db_connection.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 
 $room_id = $_POST['id'] ?? '';
@@ -26,24 +25,20 @@ if (empty($room_id) || empty($room_number) || empty($capacity) || empty($floor))
     die("Please fill in all required fields.");
 }
 
-try {
-    $stmt = $pdo->prepare("
-        UPDATE Rooms 
-        SET room_number = :room_number, capacity = :capacity, equipment = :equipment, 
-            floor = :floor, description = :description 
-        WHERE id = :id
-    ");
-    $stmt->execute([
-        'room_number' => $room_number,
-        'capacity' => $capacity,
-        'equipment' => $equipment,
-        'floor' => $floor,
-        'description' => $description,
-        'id' => $room_id
-    ]);
+$stmt = $conn->prepare("
+    UPDATE Rooms 
+    SET room_number = ?, capacity = ?, equipment = ?, 
+        floor = ?, description = ? 
+    WHERE id = ?
+");
+$stmt->bind_param("sisssi", $room_number, $capacity, $equipment, $floor, $description, $room_id);
 
+if ($stmt->execute()) {
     echo "Room updated successfully!";
-} catch (PDOException $e) {
-    die("Error updating room: " . $e->getMessage());
+} else {
+    die("Error updating room: " . $stmt->error);
 }
+
+$stmt->close();
+$conn->close();
 ?>

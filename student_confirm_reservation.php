@@ -8,6 +8,12 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once 'admin/includes/db_connection.php';
 
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
+}
+
 $room_number = $_POST['room_number'] ?? '';
 $date = $_POST['reservation_date'] ?? '';
 $time_slot = $_POST['time_slot'] ?? '';
@@ -32,83 +38,69 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
     exit();
 }
 
-try {
-    $stmt = $pdo->prepare("SELECT id FROM Rooms WHERE room_number = :room_number");
-    $stmt->execute(['room_number' => $room_number]);
-    $room = $stmt->fetch(PDO::FETCH_ASSOC);
+$query = "SELECT id FROM Rooms WHERE room_number = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("s", $room_number);
+$stmt->execute();
+$result = $stmt->get_result();
+$room = $result->fetch_assoc();
 
-    if (!$room) {
-        $_SESSION['error'] = "Invalid room number.";
-        header("Location: student_reservation.php?room=$room_number");
-        exit();
-    }
-
-    $room_id = $room['id'];
-} catch (PDOException $e) {
-    $_SESSION['error'] = "Database error: " . $e->getMessage();
+if (!$room) {
+    $_SESSION['error'] = "Invalid room number.";
     header("Location: student_reservation.php?room=$room_number");
     exit();
 }
 
-try {
-    $stmt = $pdo->prepare("
-        SELECT id FROM Bookings 
-        WHERE room_id = :room_id 
-        AND date = :date 
-        AND timeslot = :timeslot
-    ");
-    $stmt->execute([
-        'room_id' => $room_id,
-        'date' => $date,
-        'timeslot' => $time_slot
-    ]);
-    $conflicting_booking = $stmt->fetch(PDO::FETCH_ASSOC);
+$room_id = $room['id'];
 
-    if ($conflicting_booking) {
-        $_SESSION['error'] = "The selected time slot is already booked.";
-        header("Location: student_reservation.php?room=$room_number");
-        exit();
-    }
-} catch (PDOException $e) {
-    $_SESSION['error'] = "Database error: " . $e->getMessage();
+$query = "
+    SELECT id FROM Bookings 
+    WHERE room_id = ? 
+    AND date = ? 
+    AND timeslot = ?
+";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("iss", $room_id, $date, $time_slot);
+$stmt->execute();
+$result = $stmt->get_result();
+$conflicting_booking = $result->fetch_assoc();
+
+if ($conflicting_booking) {
+    $_SESSION['error'] = "The selected time slot is already booked.";
     header("Location: student_reservation.php?room=$room_number");
     exit();
 }
 
-try {
-    $stmt = $pdo->prepare("
-        INSERT INTO Bookings (user_id, room_id, date, timeslot, subject, purpose, status)
-        VALUES (:user_id, :room_id, :date, :timeslot, :subject, :purpose, 'pending')
-    ");
-    $stmt->execute([
-        'user_id' => $_SESSION['user_id'],
-        'room_id' => $room_id,
-        'date' => $date,
-        'timeslot' => $time_slot,
-        'subject' => $subject,
-        'purpose' => $purpose
-    ]);
+$query = "
+    INSERT INTO Bookings (user_id, room_id, date, timeslot, subject, purpose, status)
+    VALUES (?, ?, ?, ?, ?, ?, 'pending')
+";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("iissss", $_SESSION['user_id'], $room_id, $date, $time_slot, $subject, $purpose);
+$stmt->execute();
 
-    $reservation_id = $pdo->lastInsertId();
-    $stmt = $pdo->prepare("
-        SELECT b.*, r.room_number 
-        FROM Bookings b
-        JOIN Rooms r ON b.room_id = r.id
-        WHERE b.id = :reservation_id
-    ");
-    $stmt->execute(['reservation_id' => $reservation_id]);
-    $reservation_details = $stmt->fetch(PDO::FETCH_ASSOC);
+$reservation_id = $stmt->insert_id;
 
-    if (!$reservation_details) {
-        $_SESSION['error'] = "Failed to fetch reservation details.";
-        header("Location: student_reservation.php?room=$room_number");
-        exit();
-    }
-} catch (PDOException $e) {
-    $_SESSION['error'] = "Database error: " . $e->getMessage();
+$query = "
+    SELECT b.*, r.room_number 
+    FROM Bookings b
+    JOIN Rooms r ON b.room_id = r.id
+    WHERE b.id = ?
+";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $reservation_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$reservation_details = $result->fetch_assoc();
+
+if (!$reservation_details) {
+    $_SESSION['error'] = "Failed to fetch reservation details.";
     header("Location: student_reservation.php?room=$room_number");
     exit();
 }
+
+$stmt->close();
+$conn->close();
 ?>
 
 <!DOCTYPE html>

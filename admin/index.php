@@ -2,22 +2,24 @@
 session_start();
 include 'includes/header.php';
 include 'includes/sidebar.php';
-
 include 'includes/db_connection.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 
-$totalRooms = $pdo->query("SELECT COUNT(*) FROM Rooms")->fetchColumn();
-$totalBookings = $pdo->query("SELECT COUNT(*) FROM Bookings")->fetchColumn();
-$pendingBookings = $pdo->query("SELECT COUNT(*) FROM Bookings WHERE status = 'pending'")->fetchColumn();
-$approvedBookings = $pdo->query("SELECT COUNT(*) FROM Bookings WHERE status = 'approved'")->fetchColumn();
-$rejectedBookings = $pdo->query("SELECT COUNT(*) FROM Bookings WHERE status = 'rejected'")->fetchColumn();
+$totalRooms = $conn->query("SELECT COUNT(*) FROM Rooms")->fetch_row()[0];
+$totalBookings = $conn->query("SELECT COUNT(*) FROM Bookings")->fetch_row()[0];
+$pendingBookings = $conn->query("SELECT COUNT(*) FROM Bookings WHERE status = 'pending'")->fetch_row()[0];
+$approvedBookings = $conn->query("SELECT COUNT(*) FROM Bookings WHERE status = 'approved'")->fetch_row()[0];
+$rejectedBookings = $conn->query("SELECT COUNT(*) FROM Bookings WHERE status = 'rejected'")->fetch_row()[0];
+
+$conn->close();
 ?>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <div class="main-content container-fluid">
     <h1>Dashboard</h1>

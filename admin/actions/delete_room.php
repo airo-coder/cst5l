@@ -8,11 +8,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 
 include '../includes/db_connection.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 
 $room_id = $_GET['id'] ?? '';
@@ -23,14 +22,17 @@ if (empty($room_id)) {
     exit();
 }
 
-try {
-    $stmt = $pdo->prepare("DELETE FROM Rooms WHERE id = :id");
-    $stmt->execute(['id' => $room_id]);
+$stmt = $conn->prepare("DELETE FROM Rooms WHERE id = ?");
+$stmt->bind_param("i", $room_id);
 
+if ($stmt->execute()) {
     $_SESSION['success'] = "Room deleted successfully!";
-} catch (PDOException $e) {
-    $_SESSION['error'] = "Error deleting room: " . $e->getMessage();
+} else {
+    $_SESSION['error'] = "Error deleting room: " . $stmt->error;
 }
+
+$stmt->close();
+$conn->close();
 
 header("Location: ../room_management.php");
 exit();
