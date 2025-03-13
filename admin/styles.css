@@ -1,31 +1,117 @@
-.navbar-custom {
-    background-color: #8B0000;
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
 .sidebar {
     width: 250px;
-    background: #333;
-    color: #fff;
-    padding: 20px;
+    background: #FFFFFF;
+    border: 2px solid #CC0000;
+    color: #000000;
+    padding: 20px; 
     display: flex;
     flex-direction: column;
 }
 
-.sidebar .nav-link {
-    color: #fff;
-    margin: 10px 0;
+.sidebar .nav-item a {
+    font-size: medium;
 }
 
-.sidebar .nav-link:hover {
-    background: #444;
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
     border-radius: 5px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+}
+
+.nav-item:hover {
+    background: rgb(255, 255, 255);
+    border: 1px solid #CC0000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+}
+
+.nav-item .nav-link {
+    color: #000000;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center; 
+    flex-grow: 1; 
+}
+
+.nav-item:hover .nav-link {
+    color: #CC0000;
+}
+
+.nav-item .icon {
+    margin-left: 20px; 
+    margin-right: 10px; 
+    font-size: 1.5em;
+    color: #000000;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center; 
+}
+
+.nav-item:hover .icon {
+    color: #CC0000;
+}
+
+.mt-auto {
+    margin-top: 20px;
+    background: #FFD700;
+    border-radius: 15px;
+    color: #000000;
+    padding: 6px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Darker shadow */
+}
+
+.mt-auto:hover {
+    background: #FFFFFF;
+    border: 2px solid #CC0000;
+}
+
+.mt-auto .icon {
+    font-size: 1.5em;
+    color: #CC0000;
+    margin-left: 15px;
+    transition: all 0.3s ease;
+    align-items: center;
+    display: flex;
+}
+
+.mt-auto a {
+    color: #CC0000;
+    text-decoration: none;
+    font-weight: bold;
+    margin-right: 15px;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.mt-auto:hover a {
+    color: #CC0000;
+}
+
+.mt-auto:hover .icon {
+    color: #CC0000;
+}
+
+.navbar-custom {
+    background-color: #CC0000; 
 }
 
 .main-content {
     flex: 1;
     padding: 20px;
-}
-
-.sidebar .mt-auto {
-    margin-top: auto;
 }
