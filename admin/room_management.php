@@ -114,6 +114,53 @@ $conn->close();
 <div class="main-content container-fluid">
     <h1 class="mb-3">Room Management</h1>
 
+    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+        Add New Room
+    </button>
+
+    <div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRoomModalLabel">Add New Room</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="actions/add_room.php" method="POST" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="add_room_number">Room Number</label>
+                            <input type="text" class="form-control" id="add_room_number" name="add_room_number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="add_capacity">Capacity</label>
+                            <input type="text" class="form-control" id="add_capacity" name="add_capacity" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="add_equipment">Equipment</label>
+                            <input type="text" class="form-control" id="add_equipment" name="add_equipment">
+                        </div>
+                        <div class="form-group">
+                            <label for="add_floor">Floor</label>
+                            <input type="text" class="form-control" id="add_floor" name="add_floor" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="image">Room Image</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/jpeg, image/png">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Room</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <form method="GET" class="mb-4" id="filterForm">
         <div class="row g-3">
             <div class="col-md-3">
@@ -174,7 +221,7 @@ $conn->close();
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editRoomForm" method="POST" action="actions/update_room.php">
+                <form id="editRoomForm" method="POST" action="actions/update_room.php" enctype="multipart/form-data">
                     <input type="hidden" name="id" id="editRoomId">
                     <div class="mb-3">
                         <label for="editRoomNumber" class="form-label">Room Number</label>
@@ -196,12 +243,16 @@ $conn->close();
                         <label for="editDescription" class="form-label">Description</label>
                         <textarea name="description" id="editDescription" class="form-control"></textarea>
                     </div>
+                    <div class="mb-3">
+                        <label for="editImage" class="form-label">Room Image</label>
+                        <input type="file" class="form-control" id="editImage" name="image" accept="image/jpeg, image/png">
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary">Update Room</button>
                     </div>
                 </form>
-            </div>
+            </div>  
         </div>
     </div>
 </div>
@@ -224,48 +275,31 @@ $conn->close();
             }, 500);
         }
 
-        floorInput.addEventListener('input', debounceSubmit);
-        capacityInput.addEventListener('input', debounceSubmit);
+        if (floorInput && capacityInput) {
+            floorInput.addEventListener('input', debounceSubmit);
+            capacityInput.addEventListener('input', debounceSubmit);
+        }
 
-    $('.edit-room-btn').on('click', function () {
-        var roomId = $(this).data('id'); 
-        var row = $(this).closest('tr');
-        var roomNumber = row.find('td:eq(0)').text();
-        var capacity = row.find('td:eq(1)').text();
-        var equipment = row.find('td:eq(2)').text();
-        var floor = row.find('td:eq(3)').text();
-        var description = row.find('td:eq(4)').text();
+        $('.edit-room-btn').on('click', function () {
+            var roomId = $(this).data('id'); 
+            var row = $(this).closest('tr');
+            var roomNumber = row.find('td:eq(0)').text();
+            var capacity = row.find('td:eq(1)').text();
+            var equipment = row.find('td:eq(2)').text();
+            var floor = row.find('td:eq(3)').text();
+            var description = row.find('td:eq(4)').text();
 
-        $('#editRoomId').val(roomId);
-        $('#editRoomNumber').val(roomNumber);
-        $('#editCapacity').val(capacity);
-        $('#editEquipment').val(equipment);
-        $('#editFloor').val(floor);
-        $('#editDescription').val(description);
+            $('#editRoomId').val(roomId);
+            $('#editRoomNumber').val(roomNumber);
+            $('#editCapacity').val(capacity);
+            $('#editEquipment').val(equipment);
+            $('#editFloor').val(floor);
+            $('#editDescription').val(description);
 
-        $('#editRoomModal').modal('show');
-    });
-
-    $('#editRoomForm').on('submit', function (e) {
-        e.preventDefault(); 
-
-        var formData = $(this).serialize(); 
-
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST',
-            data: formData,
-            success: function (response) {
-                alert('Room updated successfully!');
-                $('#editRoomModal').modal('hide');
-                location.reload();
-            },
-            error: function () {
-                alert('Failed to update room.');
-            }
+            $('#editRoomModal').modal('show');
         });
     });
-});
 </script>
+
 
 <?php include 'includes/footer.php'; ?>

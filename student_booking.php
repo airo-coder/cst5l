@@ -149,8 +149,15 @@ $conn->close();
                 <div class="card h-100 room-card">
                     <div class="floor-badge"><?= htmlspecialchars($room['floor']) ?></div>
                     <div class="capacity-badge"><?= htmlspecialchars($room['capacity']) ?> Persons</div>
-                    <img src="images/rooms/room-<?= htmlspecialchars($room['room_number']) ?>.jpg" class="room-image"
-                        alt="Room <?= htmlspecialchars($room['room_number']) ?>">
+                    <!-- Fetch image from the database -->
+                    <?php if (!empty($room['image'])): ?>
+                        <img src="images/rooms/<?= htmlspecialchars($room['image']) ?>" class="room-image"
+                            alt="Room <?= htmlspecialchars($room['room_number']) ?>">
+                    <?php else: ?>
+                        <!-- Default image if no image is uploaded -->
+                        <img src="images/rooms/default-room.jpg" class="room-image"
+                            alt="Room <?= htmlspecialchars($room['room_number']) ?>">
+                    <?php endif; ?>
                     <div class="card-body">
                         <h5 class="card-title">Room <?= htmlspecialchars($room['room_number']) ?></h5>
                         <div class="equipment-list mb-3">

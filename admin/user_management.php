@@ -10,22 +10,18 @@ if ($conn->connect_error) {
     die("Database connection failed: " . $conn->connect_error);
 }
 
-// Get filter parameters from the URL
 $id = $_GET['id'] ?? '';
 $name = $_GET['name'] ?? '';
 $role = $_GET['role'] ?? '';
 
-// Pagination
 $page = $_GET['page'] ?? 1;
 $limit = 10;
 $offset = ($page - 1) * $limit;
 
-// Base query
-$query = "SELECT id, name, email, role FROM Users WHERE 1=1";
+$query = "SELECT id, name, email, role, profile_image FROM Users WHERE 1=1";
 $types = '';
 $params = [];
 
-// Add filters if provided
 if (!empty($id)) {
     $query .= " AND id = ?";
     $types .= 'i';
@@ -44,13 +40,11 @@ if (!empty($role)) {
     $params[] = $role;
 }
 
-// Add pagination
 $query .= " ORDER BY id ASC LIMIT ? OFFSET ?";
 $types .= 'ii';
 $params[] = $limit;
 $params[] = $offset;
 
-// Prepare and execute the query
 $stmt = $conn->prepare($query);
 if ($stmt) {
     if (!empty($params)) {
@@ -63,7 +57,6 @@ if ($stmt) {
     die("Error preparing query: " . $conn->error);
 }
 
-// Total users query (for pagination)
 $totalUsersQuery = "SELECT COUNT(*) FROM Users WHERE 1=1";
 $totalParams = [];
 $totalTypes = '';
@@ -119,7 +112,7 @@ $conn->close();
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addUserForm" action="actions/add_user.php" method="POST">
+                    <form id="addUserForm" action="actions/add_user.php" method="POST" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="add_name">Name</label>
                             <input type="text" class="form-control" id="add_name" name="add_name" required>
@@ -139,46 +132,15 @@ $conn->close();
                                 <option value="user">User</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="add_profile_image">Profile Image</label>
+                            <input type="file" class="form-control" id="add_profile_image" name="profile_image" accept="image/jpeg, image/png">
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" form="addUserForm" class="btn btn-primary">Add User</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editUserForm" action="actions/edit_user.php" method="POST">
-                        <input type="hidden" name="id" id="editUserId">
-                        <div class="form-group">
-                            <label for="editName">Name</label>
-                            <input type="text" class="form-control" id="editName" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editEmail">Email</label>
-                            <input type="email" class="form-control" id="editEmail" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editRole">Role</label>
-                            <select class="form-control" id="editRole" name="role" required>
-                                <option value="admin">Admin</option>
-                                <option value="user">User</option>
-                            </select>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Update User</button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
@@ -207,31 +169,95 @@ $conn->close();
 
     <div class="card">
         <div class="card-body">
-            <table class="table table-bordered">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($users as $user): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($user['id']) ?></td>
-                        <td><?= htmlspecialchars($user['name']) ?></td>
-                        <td><?= htmlspecialchars($user['email']) ?></td>
-                        <td><?= htmlspecialchars($user['role']) ?></td>
-                        <td>
-                            <a href="#editUserModal" class="btn btn-sm btn-warning edit-user-btn" data-id="<?= $user['id'] ?>">Edit</a>
-                            <a href="actions/delete_user.php?id=<?= $user['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th style="width: 120px;">Profile Image</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($users as $user): ?>
+                <tr>
+                    <td><?= htmlspecialchars($user['id']) ?></td>
+                    <td class="align-middle text-center" style="vertical-align: middle;">
+                        <?php if (!empty($user['profile_image'])): ?>
+                            <img src="../images/profiles/<?= htmlspecialchars($user['profile_image']) ?>"
+                                alt="Profile Image"
+                                width="40"
+                                height="40"
+                                class="rounded-circle object-fit-cover"
+                                style="object-fit: cover;">
+                        <?php else: ?>
+                            <img src="../images/profiles/default-profile.jpg"
+                                alt="Default Profile Image"
+                                width="40"
+                                height="40"
+                                class="rounded-circle object-fit-cover"
+                                style="object-fit: cover;">
+                        <?php endif; ?>
+                    </td>
+                    <td><?= htmlspecialchars($user['name']) ?></td>
+                    <td><?= htmlspecialchars($user['email']) ?></td>
+                    <td><?= htmlspecialchars($user['role']) ?></td>
+                    <td>
+                        <a href="#editUserModal" class="btn btn-sm btn-warning edit-user-btn"
+                            data-bs-toggle="modal"
+                            data-id="<?= $user['id'] ?>"
+                            data-name="<?= htmlspecialchars($user['name']) ?>"
+                            data-email="<?= htmlspecialchars($user['email']) ?>"
+                            data-role="<?= htmlspecialchars($user['role']) ?>">
+                            Edit
+                        </a>
+                        <a href="actions/delete_user.php?id=<?= $user['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm" action="actions/edit_user.php" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="id" id="editUserId">
+                        <div class="form-group">
+                            <label for="editName">Name</label>
+                            <input type="text" class="form-control" id="editName" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEmail">Email</label>
+                            <input type="email" class="form-control" id="editEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRole">Role</label>
+                            <select class="form-control" id="editRole" name="role" required>
+                                <option value="admin">Admin</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editProfileImage">Profile Image</label>
+                            <input type="file" class="form-control" id="editProfileImage" name="profile_image" accept="image/jpeg, image/png">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update User</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -250,6 +276,24 @@ $conn->close();
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const editButtons = document.querySelectorAll(".edit-user-btn");
+
+        editButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                const userId = this.getAttribute("data-id");
+                const userName = this.getAttribute("data-name");
+                const userEmail = this.getAttribute("data-email");
+                const userRole = this.getAttribute("data-role");
+
+                document.getElementById("editUserId").value = userId;
+                document.getElementById("editName").value = userName;
+                document.getElementById("editEmail").value = userEmail;
+                document.getElementById("editRole").value = userRole;
+            });
+        });
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
     const filterForm = document.getElementById('filterForm');
     const idInput = document.getElementById('id');

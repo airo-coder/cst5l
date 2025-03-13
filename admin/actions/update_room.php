@@ -25,20 +25,52 @@ if (empty($room_id) || empty($room_number) || empty($capacity) || empty($floor))
     die("Please fill in all required fields.");
 }
 
-$stmt = $conn->prepare("
-    UPDATE Rooms 
-    SET room_number = ?, capacity = ?, equipment = ?, 
-        floor = ?, description = ? 
-    WHERE id = ?
-");
-$stmt->bind_param("sisssi", $room_number, $capacity, $equipment, $floor, $description, $room_id);
+$current_image = null;
+$fetch_stmt = $conn->prepare("SELECT image FROM Rooms WHERE id = ?");
+$fetch_stmt->bind_param("i", $room_id);
+$fetch_stmt->execute();
+$fetch_stmt->bind_result($current_image);
+$fetch_stmt->fetch();
+$fetch_stmt->close();
+
+$image = $current_image; 
+
+if (!empty($_FILES['image']['name'])) {
+    $target_dir = "../../images/rooms/";
+    $file_name = basename($_FILES["image"]["name"]);
+    $target_file = $target_dir . $file_name;
+    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+    if (in_array($imageFileType, ["jpg", "jpeg", "png"])) {
+        if (move_uploaded_file($_FILES['image']["tmp_name"], $target_file)) {
+            if ($current_image && file_exists($target_dir . $current_image)) {
+                unlink($target_dir . $current_image);
+            }
+            $image = $file_name;
+        } else {
+            die("Error uploading image.");
+        }
+    } else {
+        die("Only JPG, JPEG, and PNG files are allowed.");
+    }
+}
+
+$query = "UPDATE Rooms 
+          SET room_number = ?, capacity = ?, equipment = ?, 
+              floor = ?, description = ?, image = ?
+          WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("sissssi", $room_number, $capacity, $equipment, $floor, $description, $image, $room_id);
 
 if ($stmt->execute()) {
-    echo "Room updated successfully!";
+    echo "<script>alert('Room added successfully!'); window.location.href='../room_management.php';</script>";
 } else {
-    die("Error updating room: " . $stmt->error);
+    echo "<script>alert('Error adding room: " . $stmt->error . "');</script>";
 }
 
 $stmt->close();
 $conn->close();
+
+header("Location: ../room_management.php");
+exit();
 ?>
