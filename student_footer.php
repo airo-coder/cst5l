@@ -4,15 +4,15 @@
                 <div class="col-md-4">
                     <h5>Contact Us</h5>
                     <ul class="list-unstyled">
-                        <li><i class="fas fa-phone me-2"></i>(082) 123 4567</li>
+                        <li><i class="fas fa-phone me-2"></i>090913322 NUMBER NI GWEN</li>
                         <li><i class="fas fa-envelope me-2"></i>library@umindanao.edu.ph</li>
                     </ul>
                 </div>
                 <div class="col-md-4">
                     <h5>Quick Links</h5>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-white text-decoration-none">Library Hours</a></li>
-                        <li><a href="#" class="text-white text-decoration-none">Room Policies</a></li>
+                        <li><a href="https://digos.umindanao.edu.ph/libraryservices" class="text-white text-decoration-none">Library Hours</a></li>
+                        <li><a href="https://digos.umindanao.edu.ph/libraryservices" class="text-white text-decoration-none">Room Policies</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 text-end">
