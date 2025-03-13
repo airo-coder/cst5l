@@ -133,7 +133,6 @@ if (!$room) {
             padding: 3rem 0 1rem;
             margin-top: 5rem;
         }
-        /* New CSS to disable pointer events on disabled time slots */
         .time-slot-disabled,
         .time-slot-disabled label,
         .time-slot-disabled input[type="radio"] {
@@ -257,31 +256,24 @@ if (!$room) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Function to update the availability of time slots
         function updateTimeSlotAvailability(date) {
             const roomNumber = document.querySelector('input[name="room_number"]').value;
             fetch('check_availability.php?room_number=' + encodeURIComponent(roomNumber) + '&date=' + encodeURIComponent(date))
                 .then(response => response.json())
                 .then(bookedSlots => {
-                    // Get all time slot cards
                     const timeSlotCards = document.querySelectorAll('#timeSlotsContainer .time-slot-card');
                     
                     timeSlotCards.forEach(card => {
                         const radio = card.querySelector('input[type="radio"]');
                         const label = card.querySelector('label');
 
-                        // Remove any previous disabled styles
                         card.classList.remove('time-slot-disabled');
 
-                        // Reset label text (remove any added "Taken" text)
                         label.innerHTML = label.innerHTML.replace(/ <span class="text-danger">\(Taken\)<\/span>/, '');
 
-                        // Check if this time slot is booked
                         if (bookedSlots.includes(radio.value)) {
                             radio.disabled = true;
-                            // Append " (Taken)" indicator
                             label.innerHTML += ' <span class="text-danger">(Taken)</span>';
-                            // Add disabled class to card
                             card.classList.add('time-slot-disabled');
                         } else {
                             radio.disabled = false;
@@ -291,7 +283,6 @@ if (!$room) {
                 .catch(error => console.error('Error fetching availability:', error));
         }
 
-        // Listen for changes to the reservation date input
         const reservationDateInput = document.getElementById('reservation_date');
         reservationDateInput.addEventListener('change', function () {
             const selectedDate = this.value;
