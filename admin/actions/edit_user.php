@@ -8,13 +8,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 
 include '../includes/db_connection.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
+$conn = new mysqli($host, $username, $password, $dbname);
 
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
+}
 
 $user_id = $_POST['id'] ?? '';
 $name = $_POST['name'] ?? '';
@@ -27,23 +25,21 @@ if (empty($user_id) || empty($name) || empty($email) || empty($role)) {
     exit();
 }
 
-try {
-    $stmt = $pdo->prepare("
-        UPDATE Users 
-        SET name = :name, email = :email, role = :role 
-        WHERE id = :id
-    ");
-    $stmt->execute([
-        'name' => $name,
-        'email' => $email,
-        'role' => $role,
-        'id' => $user_id
-    ]);
+$stmt = $conn->prepare("
+    UPDATE Users 
+    SET name = ?, email = ?, role = ? 
+    WHERE id = ?
+");
+$stmt->bind_param("sssi", $name, $email, $role, $user_id);
 
+if ($stmt->execute()) {
     $_SESSION['success'] = "User updated successfully!";
-} catch (PDOException $e) {
-    $_SESSION['error'] = "Error updating user: " . $e->getMessage();
+} else {
+    $_SESSION['error'] = "Error updating user: " . $stmt->error;
 }
+
+$stmt->close();
+$conn->close();
 
 header("Location: ../user_management.php");
 exit();

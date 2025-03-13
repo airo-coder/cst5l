@@ -3,22 +3,21 @@ session_start();
 
 include 'includes/header.php';
 include 'includes/sidebar.php';
-
 include 'includes/db_connection.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 
 $room_number = $_GET['room_number'] ?? '';
 $date = $_GET['date'] ?? '';
-$status = $_GET['status'] ?? '';
+$status = $_GET['status'] ?? 'pending'; 
+
 
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit = 10; 
+$limit = 10;
 $offset = ($page - 1) * $limit;
 
 $query = "
@@ -27,85 +26,112 @@ $query = "
     JOIN Rooms r ON b.room_id = r.id
     WHERE 1=1
 ";
+$types = '';
 $params = [];
 
 if (!empty($room_number)) {
-    $query .= " AND r.room_number LIKE :room_number";
-    $params[':room_number'] = "%$room_number%";
+    $query .= " AND r.room_number LIKE ?";
+    $types .= 's';
+    $params[] = "%$room_number%";
 }
 
 if (!empty($date)) {
-    $query .= " AND b.date = :date";
-    $params[':date'] = $date;
+    $query .= " AND b.date = ?";
+    $types .= 's';
+    $params[] = $date;
 }
 
 if (!empty($status)) {
-    $query .= " AND b.status = :status";
-    $params[':status'] = $status;
+    $query .= " AND b.status = ?";
+    $types .= 's';
+    $params[] = $status;
 }
 
-$query .= " ORDER BY b.date DESC, b.timeslot ASC LIMIT :limit OFFSET :offset";
-$stmt = $pdo->prepare($query);
+$query .= " ORDER BY b.date DESC, b.timeslot ASC LIMIT ? OFFSET ?";
+$types .= 'ii';
+$params[] = $limit;
+$params[] = $offset;
 
-foreach ($params as $key => &$value) {
-    $stmt->bindParam($key, $value, PDO::PARAM_STR);
+$stmt = $conn->prepare($query);
+if ($stmt) {
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $bookings = $result->fetch_all(MYSQLI_ASSOC);
+} else {
+    die("Error preparing query: " . $conn->error);
 }
-
-$stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-$stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-
-$stmt->execute();
-$bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $totalBookingsQuery = "SELECT COUNT(*) FROM Bookings b JOIN Rooms r ON b.room_id = r.id WHERE 1=1";
 
 if (!empty($room_number)) {
-    $totalBookingsQuery .= " AND r.room_number LIKE :room_number";
+    $totalBookingsQuery .= " AND r.room_number LIKE ?";
 }
 
 if (!empty($date)) {
-    $totalBookingsQuery .= " AND b.date = :date";
+    $totalBookingsQuery .= " AND b.date = ?";
 }
 
 if (!empty($status)) {
-    $totalBookingsQuery .= " AND b.status = :status";
+    $totalBookingsQuery .= " AND b.status = ?";
 }
 
-$totalStmt = $pdo->prepare($totalBookingsQuery);
+$totalStmt = $conn->prepare($totalBookingsQuery);
+if ($totalStmt) {
+    $totalTypes = '';
+    $totalParams = [];
 
-foreach ($params as $key => &$value) {
-    $totalStmt->bindParam($key, $value, PDO::PARAM_STR);
+    if (!empty($room_number)) {
+        $totalTypes .= 's';
+        $totalParams[] = "%$room_number%";
+    }
+    if (!empty($date)) {
+        $totalTypes .= 's';
+        $totalParams[] = $date;
+    }
+    if (!empty($status)) {
+        $totalTypes .= 's';
+        $totalParams[] = $status;
+    }
+
+    if (!empty($totalTypes)) {
+        $totalStmt->bind_param($totalTypes, ...$totalParams);
+    }
+
+    $totalStmt->execute();
+    $totalResult = $totalStmt->get_result();
+    $totalBookings = $totalResult->fetch_row()[0];
+    $totalPages = ceil($totalBookings / $limit);
+} else {
+    die("Error preparing total bookings query: " . $conn->error);
 }
 
-$totalStmt->execute();
-$totalBookings = $totalStmt->fetchColumn();
-$totalPages = ceil($totalBookings / $limit);
+$stmt->close();
+$totalStmt->close();
+$conn->close();
 ?>
 
 <div class="main-content container-fluid">
     <h1>Booking Management</h1>
 
-    <form method="GET" class="mb-4">
+    <form method="GET" class="mb-4" id="filterForm">
         <div class="row g-3">
             <div class="col-md-3">
                 <label for="room_number" class="form-label">Room Number</label>
-                <input type="text" name="room_number" id="room_number" class="form-control" placeholder="Search by room">
+                <input type="text" name="room_number" id="room_number" class="form-control" placeholder="Search by room" value="<?= htmlspecialchars($room_number ?? '') ?>">
             </div>
             <div class="col-md-3">
                 <label for="date" class="form-label">Date</label>
-                <input type="date" name="date" id="date" class="form-control">
+                <input type="date" name="date" id="date" class="form-control" value="<?= htmlspecialchars($date ?? '') ?>">
             </div>
             <div class="col-md-3">
                 <label for="status" class="form-label">Status</label>
                 <select name="status" id="status" class="form-select">
-                    <option value="">All</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
+                    <option value="pending" <?= ($status ?? 'pending') === 'pending' ? 'selected' : '' ?>>Pending</option>
+                    <option value="approved" <?= ($status ?? '') === 'approved' ? 'selected' : '' ?>>Approved</option>
+                    <option value="rejected" <?= ($status ?? '') === 'rejected' ? 'selected' : '' ?>>Rejected</option>
+                    <option value="" <?= empty($status) ? 'selected' : '' ?>>All</option>
                 </select>
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100 mt-4">Filter</button>
             </div>
         </div>
     </form>
@@ -150,11 +176,46 @@ $totalPages = ceil($totalBookings / $limit);
         <ul class="pagination justify-content-center">
             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
             <li class="page-item <?= $page == $i ? 'active' : '' ?>">
-                <a class="page-link" href="?page=<?= $i ?>&room_number=<?= urlencode($room_number) ?>&date=<?= urlencode($date) ?>&status=<?= urlencode($status) ?>"><?= $i ?></a>
+                <a class="page-link" href="?page=<?= $i ?>&room_number=<?= urlencode($room_number ?? '') ?>&date=<?= urlencode($date ?? '') ?>&status=<?= urlencode($status ?? '') ?>"><?= $i ?></a>
             </li>
             <?php endfor; ?>
         </ul>
     </nav>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const filterForm = document.getElementById('filterForm');
+    const roomNumberInput = document.getElementById('room_number');
+    const dateInput = document.getElementById('date');
+    const statusSelect = document.getElementById('status');
+
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    function submitForm() {
+        filterForm.submit();
+    }
+
+    const debouncedSubmitForm = debounce(submitForm, 300);
+
+    roomNumberInput.addEventListener('input', function () {
+        const value = roomNumberInput.value.trim(); 
+        if (value.length >= 3) {
+            debouncedSubmitForm();
+        }
+    });
+    dateInput.addEventListener('change', submitForm);
+    statusSelect.addEventListener('change', submitForm);
+});
+</script>
+
 
 <?php include 'includes/footer.php'; ?>

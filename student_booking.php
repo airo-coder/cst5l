@@ -1,98 +1,30 @@
 <?php
 session_start();
-// Temporary development bypass - remove these lines in production
-$_SESSION['user_id'] = 1;
-$_SESSION['user_name'] = "Test User";
 
-$rooms = [
-    // First Floor (4-6 Persons)
-    [
-        'number' => '101',
-        'capacity' => '4-6 Persons',
-        'equipment' => 'LCD Screen, Whiteboard',
-        'floor' => '1st Floor',
-        'description' => 'Ideal for small group discussions and brainstorming sessions'
-    ],
-    [
-        'number' => '102',
-        'capacity' => '4-6 Persons',
-        'equipment' => 'Projector, Conference Table',
-        'floor' => '1st Floor',
-        'description' => 'Perfect for presentations and team meetings'
-    ],
-    [
-        'number' => '103',
-        'capacity' => '4-6 Persons',
-        'equipment' => 'LCD Screen, Whiteboard',
-        'floor' => '1st Floor',
-        'description' => 'Compact space with collaborative technology'
-    ],
-    [
-        'number' => '104',
-        'capacity' => '4-6 Persons',
-        'equipment' => 'Projector, Conference Table',
-        'floor' => '1st Floor',
-        'description' => 'Meeting room with professional presentation setup'
-    ],
-    [
-        'number' => '105',
-        'capacity' => '4-6 Persons',
-        'equipment' => 'LCD Screen, Whiteboard',
-        'floor' => '1st Floor',
-        'description' => 'Interactive space for creative collaborations'
-    ],
-    [
-        'number' => '106',
-        'capacity' => '4-6 Persons',
-        'equipment' => 'Projector, Conference Table',
-        'floor' => '1st Floor',
-        'description' => 'Tech-enabled collaboration space with smart board'
-    ],
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
-    // Second Floor (8-10 Persons)
-    [
-        'number' => '201',
-        'capacity' => '8-10 Persons',
-        'equipment' => 'Projector, Conference Table',
-        'floor' => '2nd Floor',
-        'description' => 'Large conference-style meeting room'
-    ],
-    [
-        'number' => '202',
-        'capacity' => '8-10 Persons',
-        'equipment' => 'LCD Screen, Whiteboard',
-        'floor' => '2nd Floor',
-        'description' => 'Spacious collaborative environment with dual displays'
-    ],
-    [
-        'number' => '203',
-        'capacity' => '8-10 Persons',
-        'equipment' => 'Projector, Conference Table',
-        'floor' => '2nd Floor',
-        'description' => 'Executive meeting room with video conferencing'
-    ],
-    [
-        'number' => '204',
-        'capacity' => '8-10 Persons',
-        'equipment' => 'LCD Screen, Whiteboard',
-        'floor' => '2nd Floor',
-        'description' => 'Innovation lab with writable walls'
-    ],
-    [
-        'number' => '205',
-        'capacity' => '8-10 Persons',
-        'equipment' => 'Projector, Conference Table',
-        'floor' => '2nd Floor',
-        'description' => 'Multi-purpose large group collaboration space'
-    ],
-    [
-        'number' => '206',
-        'capacity' => '8-10 Persons',
-        'equipment' => 'LCD Screen, Whiteboard',
-        'floor' => '2nd Floor',
-        'description' => 'Flexible workshop space with movable furniture'
-    ]
-];
+include 'admin/includes/db_connection.php';
+
+$conn = new mysqli($host, $username, $password, $dbname);
+
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
+}
+
+$query = "SELECT * FROM rooms";
+$result = $conn->query($query);
+
+if ($result) {
+    $rooms = $result->fetch_all(MYSQLI_ASSOC);
+} else {
+    die("Error fetching rooms: " . $conn->error);
+}
+
+$conn->close();
 ?>
 
 <html lang="en">
@@ -196,53 +128,52 @@ $rooms = [
 </head>
 
 <body>
-    <?php include 'student_header.php'?>
+<?php include 'student_header.php'; ?>
 
-    <section class="hero-section">
-        <div class="wave-divider">
-            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-                <path d="M1200 0L0 0 892.25 104.14 1200 0z"></path>
-            </svg>
-        </div>
-        <div class="container text-center">
-            <h1 class="display-4 mb-4">Available Collaboration Rooms</h1>
-            <p class="lead mb-4">Select your preferred space for academic collaboration</p>
-        </div>
-    </section>
+<section class="hero-section">
+    <div class="wave-divider">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M1200 0L0 0 892.25 104.14 1200 0z"></path>
+        </svg>
+    </div>
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">Available Collaboration Rooms</h1>
+        <p class="lead mb-4">Select your preferred space for academic collaboration</p>
+    </div>
+</section>
 
-    <main class="container my-5">
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            <?php foreach ($rooms as $room): ?>
-                <div class="col">
-                    <div class="card h-100 room-card">
-                        <div class="floor-badge"><?= $room['floor'] ?></div>
-                        <div class="capacity-badge"><?= $room['capacity'] ?></div>
-                        <img src="images/rooms/room-<?= $room['number'] ?>.jpg" class="room-image"
-                            alt="Room <?= $room['number'] ?>">
-                        <div class="card-body">
-                            <h5 class="card-title">Room <?= $room['number'] ?></h5>
-                            <div class="equipment-list mb-3">
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="fas fa-tools text-um-red me-2"></i>
-                                    <?= $room['equipment'] ?>
-                                </div>
+<main class="container my-5">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <?php foreach ($rooms as $room): ?>
+            <div class="col">
+                <div class="card h-100 room-card">
+                    <div class="floor-badge"><?= htmlspecialchars($room['floor']) ?></div>
+                    <div class="capacity-badge"><?= htmlspecialchars($room['capacity']) ?> Persons</div>
+                    <img src="images/rooms/room-<?= htmlspecialchars($room['room_number']) ?>.jpg" class="room-image"
+                        alt="Room <?= htmlspecialchars($room['room_number']) ?>">
+                    <div class="card-body">
+                        <h5 class="card-title">Room <?= htmlspecialchars($room['room_number']) ?></h5>
+                        <div class="equipment-list mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-tools text-um-red me-2"></i>
+                                <?= htmlspecialchars($room['equipment']) ?>
                             </div>
-                            <p class="card-text text-muted small">
-                                <?= $room['description'] ?>
-                            </p>
-                            <a href="student_reservation.php?room=<?= $room['number'] ?>" class="btn btn-um w-100">
-                                Reserve Now <i class="fas fa-arrow-right ms-2"></i>
-                            </a>
                         </div>
+                        <p class="card-text text-muted small">
+                            <?= htmlspecialchars($room['description']) ?>
+                        </p>
+                        <a href="student_reservation.php?room=<?= htmlspecialchars($room['room_number']) ?>" class="btn btn-um w-100">
+                            Reserve Now <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        </div>
-    </main>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</main>
 
-    <?php include 'student_footer.php'?>
+<?php include 'student_footer.php'; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

@@ -2,22 +2,25 @@
 session_start();
 include 'includes/header.php';
 include 'includes/sidebar.php';
-
 include 'includes/db_connection.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 
-$bookingTrends = $pdo->query("
+$bookingTrendsResult = $conn->query("
     SELECT DATE_FORMAT(date, '%Y-%m') AS month, COUNT(*) AS bookings
     FROM Bookings
     GROUP BY DATE_FORMAT(date, '%Y-%m')
     ORDER BY month ASC
-")->fetchAll(PDO::FETCH_ASSOC);
+");
+
+$bookingTrends = [];
+if ($bookingTrendsResult) {
+    $bookingTrends = $bookingTrendsResult->fetch_all(MYSQLI_ASSOC);
+}
 
 $bookingLabels = [];
 $bookingData = [];
@@ -26,13 +29,18 @@ foreach ($bookingTrends as $trend) {
     $bookingData[] = $trend['bookings'];
 }
 
-$roomUsage = $pdo->query("
+$roomUsageResult = $conn->query("
     SELECT r.room_number, COUNT(*) AS bookings
     FROM Bookings b
     JOIN Rooms r ON b.room_id = r.id
     GROUP BY r.room_number
     ORDER BY bookings DESC
-")->fetchAll(PDO::FETCH_ASSOC);
+");
+
+$roomUsage = [];
+if ($roomUsageResult) {
+    $roomUsage = $roomUsageResult->fetch_all(MYSQLI_ASSOC);
+}
 
 $roomLabels = [];
 $roomData = [];
@@ -40,6 +48,8 @@ foreach ($roomUsage as $usage) {
     $roomLabels[] = $usage['room_number'];
     $roomData[] = $usage['bookings'];
 }
+
+$conn->close();
 ?>
 
 <div class="main-content container-fluid">
@@ -65,6 +75,8 @@ foreach ($roomUsage as $usage) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
     var bookingCtx = document.getElementById('bookingChart').getContext('2d');
     var bookingChart = new Chart(bookingCtx, {

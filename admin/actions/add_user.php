@@ -1,41 +1,43 @@
 <?php
-session_start(); // Start session for flash messages
+session_start();
 
-// Include the database connection file
 include '../includes/db_connection.php';
 
-// Handle form submission
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $role = $_POST['role'];
-    $password = $_POST['password']; // Get the password from the form
+    $name = $_POST['add_name'];
+    $email = $_POST['add_email'];
+    $role = $_POST['add_role'];
+    $password = $_POST['add_password'];
 
-    // Validate input
     if (!empty($name) && !empty($email) && !empty($role) && !empty($password)) {
-        try {
-            // Hash the password
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            // Insert user into the database
-            $stmt = $pdo->prepare("INSERT INTO Users (name, email, role, password) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$name, $email, $role, $hashedPassword]);
+        $stmt = $conn->prepare("INSERT INTO Users (name, email, role, password) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $name, $email, $role, $hashedPassword);
 
-            // Redirect with success message
+        if ($stmt->execute()) {
             $_SESSION['success'] = "User added successfully!";
             header("Location: ../user_management.php");
             exit();
-        } catch (PDOException $e) {
-            // Handle database errors
-            $_SESSION['error'] = "Error adding user: " . $e->getMessage();
+        } else {
+            $_SESSION['error'] = "Error adding user: " . $stmt->error;
             header("Location: ../user_management.php");
             exit();
         }
+
+        $stmt->close();
     } else {
-        // Handle validation errors
         $_SESSION['error'] = "Please fill in all required fields.";
         header("Location: ../user_management.php");
         exit();
     }
 }
+
+$conn->close();
 ?>

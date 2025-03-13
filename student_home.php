@@ -8,16 +8,17 @@ if (!isset($_SESSION['user_id'])) {
 
 include 'admin/includes/db_connection.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 
-$stmt = $pdo->prepare("SELECT name FROM Users WHERE id = :user_id");
-$stmt->execute(['user_id' => $_SESSION['user_id']]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt = $conn->prepare("SELECT name FROM Users WHERE id = ?");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
 
 if (!$user) {
     session_unset();
@@ -27,7 +28,11 @@ if (!$user) {
 }
 
 $user_name = $user['name'];
+
+$stmt->close();
+$conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
