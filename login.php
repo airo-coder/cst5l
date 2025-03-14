@@ -1,7 +1,5 @@
 <?php
 session_start();
-
-include 'admin/includes/db_connection.php';
 ?>
 
 <!DOCTYPE html>
@@ -115,7 +113,7 @@ include 'admin/includes/db_connection.php';
                                 <span class="input-icon">
                                     <i class="fas fa-envelope"></i>
                                 </span>
-                                <input type="email" class="form-control" name="email" placeholder="name@umindanao.edu.ph" required>
+                                <input type="email" class="form-control" name="email" placeholder="username@umindanao.edu.ph" required>
                             </div>
                         </div>
                 

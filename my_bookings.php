@@ -20,7 +20,7 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 6;
 $offset = ($page - 1) * $limit;
 
-$query = "SELECT b.id, r.room_number, b.date, b.timeslot, b.subject, b.purpose, b.status 
+$query = "SELECT b.id, r.room_number, b.date, b.timeslot, b.subject, b.purpose, b.status, b.created_at
           FROM Bookings b
           JOIN Rooms r ON b.room_id = r.id
           WHERE b.user_id = ?";
@@ -40,7 +40,7 @@ if (!empty($status)) {
     $types .= "s";
 }
 
-$query .= " ORDER BY b.date DESC, b.timeslot ASC LIMIT ? OFFSET ?";
+$query .= " ORDER BY b.created_at DESC, b.timeslot ASC LIMIT ? OFFSET ?";
 $params[] = $limit;
 $params[] = $offset;
 $types .= "ii";

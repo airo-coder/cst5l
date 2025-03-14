@@ -18,17 +18,15 @@
             <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
             <a class="nav-link" href="index.php">Dashboard</a>
         </li>
-
-        <li class="nav-item">
-            <span class="icon"><ion-icon name="pencil-outline"></ion-icon></span>
-            <a class="nav-link" href="room_management.php">Room Management</a>
-        </li>
-
         <li class="nav-item">
             <span class="icon"><ion-icon name="book-outline"></ion-icon></span>
             <a class="nav-link" href="booking_management.php">Booking Management</a>
         </li>
 
+        <li class="nav-item">
+            <span class="icon"><ion-icon name="pencil-outline"></ion-icon></span>
+            <a class="nav-link" href="room_management.php">Room Management</a>
+        </li>
         <li class="nav-item">
             <span class="icon"><ion-icon name="people-outline"></ion-icon></span>
             <a class="nav-link" href="user_management.php">User Management</a>

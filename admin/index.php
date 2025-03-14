@@ -10,6 +10,14 @@ if ($conn->connect_error) {
     die("Database connection failed: " . $conn->connect_error);
 }
 
+$stmt = $conn->prepare("SELECT name FROM Users WHERE id = ?");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+
+$user_name = $user['name'];
+
 // Dashboard stats
 $totalRooms = $conn->query("SELECT COUNT(*) FROM Rooms")->fetch_row()[0];
 $totalBookings = $conn->query("SELECT COUNT(*) FROM Bookings")->fetch_row()[0];
@@ -62,23 +70,25 @@ $conn->close();
 ?>
 
 <div class="main-content container-fluid">
+    <h3 class="display-4 mb-4">Welcome, <?= htmlspecialchars($user_name) ?>!</h3>
     <h1>Dashboard</h1>
-    
+
     <!-- Stats Cards -->
     <div class="row">
+
         <div class="col-md-3">
             <div class="card bg-primary text-white">
                 <div class="card-body">
-                    <h5 class="card-title">Total Rooms</h5>
-                    <p class="card-text"><?= htmlspecialchars($totalRooms) ?></p>
+                    <h5 class="card-title">Total Bookings</h5>
+                    <p class="card-text"><?= htmlspecialchars($totalBookings) ?></p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card bg-success text-white">
                 <div class="card-body">
-                    <h5 class="card-title">Total Bookings</h5>
-                    <p class="card-text"><?= htmlspecialchars($totalBookings) ?></p>
+                    <h5 class="card-title">Approved Bookings</h5>
+                    <p class="card-text"><?= htmlspecialchars($approvedBookings) ?></p>
                 </div>
             </div>
         </div>

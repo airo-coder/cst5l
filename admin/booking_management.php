@@ -20,7 +20,7 @@ $limit = 10;
 $offset = ($page - 1) * $limit;
 
 $query = "
-    SELECT b.id, r.room_number, b.date, b.timeslot, b.subject, b.purpose, b.status, 
+    SELECT b.id, r.room_number, b.date, b.timeslot, b.subject, b.purpose, b.status, b.created_at, 
            u.name AS user_name, u.profile_image AS user_profile_image
     FROM Bookings b
     JOIN Rooms r ON b.room_id = r.id
@@ -40,7 +40,7 @@ if (!empty($status)) {
     $query .= " AND b.status = ?";
 }
 
-$query .= " ORDER BY b.date DESC, b.timeslot ASC LIMIT ? OFFSET ?";
+$query .= " ORDER BY b.created_at DESC, b.timeslot ASC LIMIT ? OFFSET ?";
 
 $stmt = $conn->prepare($query);
 if (!$stmt) {
