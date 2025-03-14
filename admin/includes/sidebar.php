@@ -34,11 +34,6 @@
             <a class="nav-link" href="user_management.php">User Management</a>
         </li>
 
-        <li class="nav-item">
-            <span class="icon"><ion-icon name="pencil-outline"></ion-icon></span>
-            <a class="nav-link" href="reports.php">Reports</a>
-        </li>
-
     </ul>
  
 </div>
