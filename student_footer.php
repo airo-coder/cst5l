@@ -11,17 +11,17 @@
                 <div class="col-md-4">
                     <h5>Quick Links</h5>
                     <ul class="list-unstyled">
-                        <li><a href="https://digos.umindanao.edu.ph/libraryservices" class="text-white text-decoration-none">Library Hours</a></li>
-                        <li><a href="https://digos.umindanao.edu.ph/libraryservices" class="text-white text-decoration-none">Room Policies</a></li>
+                        <li><a href="https://digos.umindanao.edu.ph/libraryservices" target="_blank" class="text-white text-decoration-none">Library Hours</a></li>
+                        <li><a href="https://digos.umindanao.edu.ph/libraryservices" target="_blank" class="text-white text-decoration-none">Room Policies</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 text-end">
                     <h5>Follow Us</h5>
                     <div class="social-links">
-                        <a href="https://www.facebook.com/UMindanaoLIC" class="text-white me-3">
+                        <a href="https://www.facebook.com/UMindanaoLIC" target="_blank" class="text-white me-3">
                             <i class="fab fa-facebook fa-2x"></i>
                         </a>
-                        <a href="https://x.com/uniminofficial?lang=en" class="text-white">
+                        <a href="https://x.com/uniminofficial?lang=en" target="_blank" class="text-white">
                             <i class="fab fa-twitter fa-2x"></i>
                         </a>
                     </div>

@@ -20,9 +20,9 @@
                 <button class="btn btn-outline-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                     Admin
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <ul class="dropdown-menu admin-dropdown" aria-labelledby="dropdownMenuButton">
                     <li>
-                    <a href="logout.php" class="dropdown-item custom-logout">Logout</a>
+                        <a href="logout.php" class="dropdown-item custom-logout">Logout</a>
                     </li>
                 </ul>
             </div>

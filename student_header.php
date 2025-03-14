@@ -1,10 +1,24 @@
+<?php
+include 'admin/includes/db_connection.php';
+
+// Get current user's profile data
+$user_id = $_SESSION['user_id'];
+$query = "SELECT name, profile_image FROM Users WHERE id = '$user_id'";
+$result = mysqli_query($conn, $query);
+$user = mysqli_fetch_assoc($result);
+
+// Set default image if no profile image exists
+$profile_image = !empty($user['profile_image'])
+    ? 'images/profiles/' . $user['profile_image']
+    : 'images/profiles/default-profile.jpg';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Add your CSS links here if needed -->
 </head>
 
 <body>
@@ -25,7 +39,20 @@
                             href="my_bookings.php">My Bookings</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="admin/logout.php">Logout</a>
+                        <a style="margin-right: 20px;"  class="nav-link" href="admin/logout.php">Logout</a>
+                    </li>
+                    <li>
+                        <div class="d-flex align-items-center">
+                        <a href="#" class="d-flex align-items-center text-white text-decoration-none" 
+                           id="">
+                            <img src="<?= $profile_image ?>" 
+                                 alt="Profile Image" 
+                                 width="40" 
+                                 height="40" 
+                                 class="rounded-circle me-2">
+                            <span><?= htmlspecialchars($user['name']) ?></span>
+                        </a>
+                        </div>
                     </li>
                 </ul>
             </div>

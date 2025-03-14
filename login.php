@@ -1,6 +1,7 @@
 <?php
 session_start();
-$error = '';
+
+include 'admin/includes/db_connection.php';
 ?>
 
 <!DOCTYPE html>
@@ -107,10 +108,6 @@ $error = '';
                 </div>
                 
                 <div class="login-body">
-                    <?php if($error): ?>
-                    <div class="alert alert-danger mb-4"><?= htmlspecialchars($error) ?></div>
-                    <?php endif; ?>
-
                     <form action="authenticate.php" method="POST">
                         <div class="mb-3">
                             <label class="form-label">UM Email</label>
@@ -122,26 +119,55 @@ $error = '';
                             </div>
                         </div>
                 
-                    
-    <div class="mb-4">
-        <label class="form-label">Password</label>
-        <div class="input-group">
-            <span class="input-icon">
-                <i class="fas fa-lock"></i>
-            </span>
-            <input type="password" class="form-control" name="password" required>
-        </div>
-    </div>
+                        <div class="mb-4">
+                            <label class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-icon">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+                        </div>
 
-    <button type="submit" class="btn btn-um w-100 mb-3">
-        <i class="fas fa-sign-in-alt me-2"></i>Sign In
-    </button>
-</form>
+                        <button type="submit" class="btn btn-um w-100 mb-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Error Modal -->
+    <?php if(isset($_SESSION['login_error'])): ?>
+    <div class="modal fade" id="errorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Login Failed</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <?= $_SESSION['login_error'] ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            errorModal.show();
+        });
+    </script>
+    <?php 
+        unset($_SESSION['login_error']);
+    endif;
+    ?>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> 
+</html>

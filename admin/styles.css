@@ -70,3 +70,28 @@ body {
     flex: 1;
     padding: 20px;
 }
+
+.admin-dropdown {
+    min-width: 70px; /* Match the admin button width */
+    text-align: center;
+  }
+  
+  .custom-logout {
+    background-color: transparent;
+    color: inherit;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    width: 100%;
+    border-radius: 4px;
+  }
+  
+  .custom-logout:hover {
+    background-color: #b10000; 
+    color: #fff;
+  }
+  
+  /* Adjust the dropdown menu position */
+  .dropdown-menu {
+    transform: translateX(0px) !important;
+  }
