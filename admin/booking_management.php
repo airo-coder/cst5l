@@ -233,7 +233,7 @@ $conn->close();
                                 <strong>Booked By:</strong>
                                 <div class="d-flex align-items-center mt-2">
                                     <?php if (!empty($booking['user_profile_image'])): ?>
-                                        <img src="../../images/profiles/<?= htmlspecialchars($booking['user_profile_image']) ?>" alt="Profile Image" width="40" height="40" class="rounded-circle me-2">
+                                        <img src="../images/profiles/<?= htmlspecialchars($booking['user_profile_image']) ?>" alt="Profile Image" width="40" height="40" class="rounded-circle me-2">
                                     <?php else: ?>
                                         <img src="../../images/profiles/default-profile.jpg" alt="Default Profile Image" width="40" height="40" class="rounded-circle me-2">
                                     <?php endif; ?>
