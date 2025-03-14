@@ -133,6 +133,7 @@ if (!$room) {
             padding: 3rem 0 1rem;
             margin-top: 5rem;
         }
+
         .time-slot-disabled,
         .time-slot-disabled label,
         .time-slot-disabled input[type="radio"] {
@@ -143,7 +144,7 @@ if (!$room) {
 </head>
 
 <body>
-   <?php include 'student_header.php'?>
+    <?php include 'student_header.php' ?>
 
     <section class="hero-section">
         <div class="wave-divider">
@@ -163,17 +164,41 @@ if (!$room) {
                 <form action="student_confirm_reservation.php" method="POST" id="reservationForm">
                     <input type="hidden" name="room_number" value="<?= htmlspecialchars($room['room_number']) ?>">
 
+                    <?php
+                    // Calculate date range
+                    $maxDate = new DateTime();
+                    $maxDate->modify('+14 days');
+                    ?>
+
                     <div class="mb-4">
                         <label class="form-label">Date of Use</label>
                         <div class="input-group">
                             <span class="input-group-text bg-um-red text-white">
                                 <i class="fas fa-calendar-alt"></i>
                             </span>
-                            <input type="date" class="form-control" name="reservation_date" id="reservation_date" required
-                                min="<?= date('Y-m-d') ?>">
+                            <input type="date" class="form-control" name="reservation_date" id="reservation_date"
+                                required min="<?= date('Y-m-d') ?>" max="<?= $maxDate->format('Y-m-d') ?>"
+                                onchange="validateDate(this)">
                         </div>
-                        <small class="text-muted">Available dates up to 2 weeks in advance</small>
+                        <small class="text-muted">Available dates from <?= date('M j, Y') ?> to
+                            <?= $maxDate->format('M j, Y') ?> (Sundays excluded)</small>
                     </div>
+
+                    <script>
+                        function validateDate(input) {
+                            const selectedDate = new Date(input.value);
+                            const dayOfWeek = selectedDate.getUTCDay(); // 0 = Sunday
+
+                            if (dayOfWeek === 0) {
+                                alert('Sundays are not available for booking');
+                                input.value = ''; // Clear the input
+                            }
+
+                            // Optional: Force date picker to re-open
+                            input.blur();
+                            input.focus();
+                        }
+                    </script>
 
                     <div class="mb-4">
                         <label class="form-label">Time Slot</label>
@@ -237,7 +262,8 @@ if (!$room) {
                                 <option value="DISCUSSION">DISCUSSION</option>
                                 <option value="CONDUCT REVIEW">CONDUCT REVIEW</option>
                                 <option value="PREPARATION FOR EXAM">PREPARATION FOR EXAM</option>
-                                <option value="PRACTICE FOR THESES/DISSERTATION DEFENSE">PRACTICE FOR THESES/DISSERTATION DEFENSE</option>
+                                <option value="PRACTICE FOR THESES/DISSERTATION DEFENSE">PRACTICE FOR
+                                    THESES/DISSERTATION DEFENSE</option>
                             </select>
                         </div>
                     </div>
@@ -252,7 +278,7 @@ if (!$room) {
         </div>
     </main>
 
-    <?php include 'student_footer.php'?>
+    <?php include 'student_footer.php' ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -262,7 +288,7 @@ if (!$room) {
                 .then(response => response.json())
                 .then(bookedSlots => {
                     const timeSlotCards = document.querySelectorAll('#timeSlotsContainer .time-slot-card');
-                    
+
                     timeSlotCards.forEach(card => {
                         const radio = card.querySelector('input[type="radio"]');
                         const label = card.querySelector('label');
