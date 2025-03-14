@@ -103,7 +103,7 @@ $error = '';
             <div class="login-card">
                 <div class="login-header">
                     <img src="images/um-logo.png" alt="UM Logo">
-                    <h3 class="mb-0">Collaboration Room Access</h3>
+                    <h3 class="mb-0">UM Collaboration Room Reservation</h3>
                 </div>
                 
                 <div class="login-body">
