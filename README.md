@@ -1,4 +1,4 @@
-# 📚 Library Collaboration Room Booking System 
+# 📚 Library Collaboration Room Booking System
 
 A web-based library room reservation system built as a **Web Development final project**. Students can browse available collaboration rooms, check real-time availability, and book time slots. Admins manage room schedules and handle booking approvals.
 
